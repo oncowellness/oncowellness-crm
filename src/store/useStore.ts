@@ -1,12 +1,15 @@
 import { create } from 'zustand'
-import type { Patient, View, PHQ9Assessment, HandgripMeasurement, SixMWTMeasurement, Session } from '../types'
+import type { Patient, View, PHQ9Assessment, HandgripMeasurement, SixMWTMeasurement, Session, Program, Bundle } from '../types'
 import { MOCK_PATIENTS } from '../data/patients'
 import { CONTENT_LIBRARY } from '../data/content'
+import { PROGRAMS, BUNDLES } from '../data/programs'
 
 interface CRMState {
   view: View
   selectedPatientId: string | null
   patients: Patient[]
+  programs: Program[]
+  bundles: Bundle[]
   setView: (view: View) => void
   selectPatient: (id: string | null) => void
   addPHQ9: (patientId: string, assessment: PHQ9Assessment) => void
@@ -21,6 +24,10 @@ interface CRMState {
   addPatient: (patient: Omit<Patient, 'id' | 'handgrip' | 'sixMWT' | 'phq9' | 'gad7' | 'facitf' | 'eortc' | 'sessions' | 'contentItems' | 'crisisOrders' | 'clinicalNotes'>) => void
   updatePatient: (id: string, fields: Partial<Pick<Patient, 'name' | 'age' | 'gender' | 'email' | 'phone' | 'diagnosis' | 'cancerType' | 'stage' | 'oncologist' | 'diagnosisDate' | 'currentPhase' | 'mindState'>>) => void
   getPatient: (id: string) => Patient | undefined
+  addProgram: (p: Program) => void
+  updateProgram: (code: string, fields: Partial<Program>) => void
+  addBundle: (b: Bundle) => void
+  updateBundle: (code: string, fields: Partial<Bundle>) => void
 }
 
 function computePHQ9Severity(score: number): PHQ9Assessment['severity'] {
@@ -35,6 +42,8 @@ export const useStore = create<CRMState>((set, get) => ({
   view: 'dashboard',
   selectedPatientId: null,
   patients: MOCK_PATIENTS,
+  programs: PROGRAMS,
+  bundles: BUNDLES,
 
   setView: (view) => set({ view }),
   selectPatient: (id) => set({ selectedPatientId: id }),
@@ -201,6 +210,26 @@ export const useStore = create<CRMState>((set, get) => ({
   updatePatient: (id, fields) => {
     set(state => ({
       patients: state.patients.map(p => p.id === id ? { ...p, ...fields } : p),
+    }))
+  },
+
+  addProgram: (p) => {
+    set(state => ({ programs: [...state.programs, p] }))
+  },
+
+  updateProgram: (code, fields) => {
+    set(state => ({
+      programs: state.programs.map(p => p.code === code ? { ...p, ...fields } : p),
+    }))
+  },
+
+  addBundle: (b) => {
+    set(state => ({ bundles: [...state.bundles, b] }))
+  },
+
+  updateBundle: (code, fields) => {
+    set(state => ({
+      bundles: state.bundles.map(b => b.code === code ? { ...b, ...fields } : b),
     }))
   },
 }))

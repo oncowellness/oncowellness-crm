@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Package, CheckCircle, ChevronDown, ChevronUp, Zap } from 'lucide-react'
 import { useStore } from '../../store/useStore'
-import { BUNDLES, PROGRAMS } from '../../data/programs'
 import { PHASE_LABELS, type Phase } from '../../types'
 import { cn } from '../../lib/utils'
 
@@ -25,7 +24,7 @@ const PROGRAM_TYPE_COLORS: Record<string, string> = {
 }
 
 export function BundleManager() {
-  const { patients, selectedPatientId, assignBundle } = useStore()
+  const { patients, selectedPatientId, assignBundle, programs, bundles } = useStore()
   const patient = patients.find(p => p.id === selectedPatientId) ?? patients[0]
 
   const [expandedBundle, setExpandedBundle] = useState<string | null>(null)
@@ -67,10 +66,10 @@ export function BundleManager() {
 
       {/* Bundle cards */}
       <div className="space-y-4">
-        {BUNDLES.map(bundle => {
+        {bundles.map(bundle => {
           const isAssigned = patient?.assignedBundles.includes(bundle.code) ?? false
           const isExpanded = expandedBundle === bundle.code
-          const bundlePrograms = PROGRAMS.filter(p => bundle.programs.includes(p.code))
+          const bundlePrograms = programs.filter(p => bundle.programs.includes(p.code))
 
           return (
             <div
@@ -208,7 +207,7 @@ export function BundleManager() {
               <div className="flex flex-wrap gap-1.5">
                 {patient.assignedBundles.length > 0 ? (
                   patient.assignedBundles.map(code => {
-                    const bundle = BUNDLES.find(b => b.code === code)
+                    const bundle = bundles.find(b => b.code === code)
                     return (
                       <span key={code} className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded-lg font-medium">
                         {code} {bundle ? `– ${bundle.name}` : ''}

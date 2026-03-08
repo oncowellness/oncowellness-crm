@@ -3,7 +3,6 @@ import { AlertTriangle, CheckCircle, AlertCircle, Calendar, Phone, Mail, Stethos
 import { useStore } from '../../store/useStore'
 import { JourneyTimeline } from './JourneyTimeline'
 import { formatDate, cn } from '../../lib/utils'
-import { PROGRAMS } from '../../data/programs'
 import { PHASE_LABELS, type AlertStatus, type Phase, type MindState, type Patient } from '../../types'
 
 type PatientDraft = Pick<Patient, 'name' | 'age' | 'gender' | 'email' | 'phone' | 'diagnosis' | 'cancerType' | 'stage' | 'oncologist' | 'diagnosisDate' | 'currentPhase' | 'mindState'>
@@ -39,7 +38,7 @@ const ALERT_CONFIG: Record<AlertStatus, { label: string; icon: React.ReactNode; 
 }
 
 export function PatientDetail() {
-  const { selectedPatientId, patients, acknowledgeCrisis, updatePatient } = useStore()
+  const { selectedPatientId, patients, acknowledgeCrisis, updatePatient, programs } = useStore()
   const patient = patients.find(p => p.id === selectedPatientId)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<PatientDraft>({} as PatientDraft)
@@ -70,7 +69,7 @@ export function PatientDetail() {
   }
 
   const alert = ALERT_CONFIG[patient.alertStatus]
-  const assignedProgramDetails = PROGRAMS.filter(pr => patient.assignedPrograms.includes(pr.code))
+  const assignedProgramDetails = programs.filter(pr => patient.assignedPrograms.includes(pr.code))
   const pendingCrisis = patient.crisisOrders.filter(c => c.status === 'pendiente')
   const latestPHQ9 = patient.phq9[patient.phq9.length - 1]
   const latestHandgrip = patient.handgrip[patient.handgrip.length - 1]
@@ -351,7 +350,7 @@ export function PatientDetail() {
           </div>
           <div className="space-y-2">
             {patient.sessions.slice(-6).reverse().map(session => {
-              const prog = PROGRAMS.find(p => p.code === session.programCode)
+              const prog = programs.find(p => p.code === session.programCode)
               return (
                 <div key={session.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                   <div>

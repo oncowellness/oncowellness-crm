@@ -12,6 +12,8 @@ import { ClinicalDashboard } from './components/dashboard/ClinicalDashboard'
 import { BundleManager } from './components/bundles/BundleManager'
 import { ClinicalReport } from './components/reports/ClinicalReport'
 import { CalendarView } from './components/calendar/CalendarView'
+import { ConfigPrograms } from './components/config/ConfigPrograms'
+import { ConfigBundles } from './components/config/ConfigBundles'
 
 function ViewContent() {
   const { view, patients, selectedPatientId } = useStore()
@@ -49,6 +51,10 @@ function ViewContent() {
       return <BundleManager />
     case 'calendar':
       return <CalendarView />
+    case 'config-programs':
+      return <ConfigPrograms />
+    case 'config-bundles':
+      return <ConfigBundles />
     default:
       return <MainDashboard />
   }

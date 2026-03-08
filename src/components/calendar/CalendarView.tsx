@@ -3,7 +3,6 @@ import {
   ChevronLeft, ChevronRight, Plus, X, Check, Trash2, CalendarDays, User, Clock,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
-import { PROGRAMS } from '../../data/programs'
 import { cn } from '../../lib/utils'
 import type { Patient, Session, SessionStatus } from '../../types'
 
@@ -66,6 +65,7 @@ function AppointmentModal({
   date,
   events,
   patients,
+  programs,
   onClose,
   onAdd,
   onStatusChange,
@@ -74,6 +74,7 @@ function AppointmentModal({
   date: string
   events: CalendarEvent[]
   patients: Patient[]
+  programs: { code: string; name: string }[]
   onClose: () => void
   onAdd: (form: NewSessionForm) => void
   onStatusChange: (patientId: string, sessionId: string, status: SessionStatus) => void
@@ -92,7 +93,7 @@ function AppointmentModal({
 
   const selectedPatient = patients.find(p => p.id === form.patientId)
   const availablePrograms = selectedPatient
-    ? PROGRAMS.filter(pr => selectedPatient.assignedPrograms.includes(pr.code))
+    ? programs.filter(pr => selectedPatient.assignedPrograms.includes(pr.code))
     : []
 
   function submit() {
@@ -233,7 +234,7 @@ function AppointmentModal({
                       <option key={pr.code} value={pr.code}>{pr.code} – {pr.name}</option>
                     ))
                   ) : (
-                    PROGRAMS.map(pr => (
+                    programs.map(pr => (
                       <option key={pr.code} value={pr.code}>{pr.code} – {pr.name}</option>
                     ))
                   )}
@@ -318,7 +319,7 @@ function AppointmentModal({
 
 // ─── Main CalendarView ─────────────────────────────────────────────────────────
 export function CalendarView() {
-  const { patients, addSession, updateSessionStatus, deleteSession } = useStore()
+  const { patients, addSession, updateSessionStatus, deleteSession, programs } = useStore()
 
   const today = new Date()
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
@@ -333,7 +334,7 @@ export function CalendarView() {
     if (filterPatientId !== 'all' && patient.id !== filterPatientId) continue
     for (const session of patient.sessions) {
       if (filterStatus !== 'all' && session.status !== filterStatus) continue
-      const prog = PROGRAMS.find(p => p.code === session.programCode)
+      const prog = programs.find(p => p.code === session.programCode)
       const event: CalendarEvent = {
         patientId: patient.id,
         patientName: patient.name,
@@ -568,7 +569,7 @@ export function CalendarView() {
             .sort((a, b) => a.session.date.localeCompare(b.session.date))
             .slice(0, 8)
             .map(({ patient, session }) => {
-              const prog = PROGRAMS.find(p => p.code === session.programCode)
+              const prog = programs.find(p => p.code === session.programCode)
               const cfg = STATUS_CONFIG[session.status]
               const typeColor = PROGRAM_TYPE_COLORS[session.programCode.split('-')[0]] ?? 'bg-slate-400'
               return (
@@ -612,6 +613,7 @@ export function CalendarView() {
           date={selectedDate}
           events={selectedEvents}
           patients={patients}
+          programs={programs}
           onClose={() => setSelectedDate(null)}
           onAdd={handleAddSession}
           onStatusChange={(patientId, sessionId, status) => {

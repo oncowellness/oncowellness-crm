@@ -9,6 +9,8 @@ import {
   Heart,
   CalendarDays,
   ChevronRight,
+  Settings,
+  Layers,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import type { View, Patient } from '../../types'
@@ -21,6 +23,12 @@ const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
 
 const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Calendario', icon: <CalendarDays size={18} />, view: 'calendar' },
+  { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs' },
+]
+
+const CONFIG_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
+  { label: 'Programas', icon: <Layers size={16} />, view: 'config-programs' },
+  { label: 'Packs', icon: <Package size={16} />, view: 'config-bundles' },
 ]
 
 const PATIENT_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
@@ -78,7 +86,8 @@ export function Sidebar() {
   )
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
-  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients'].includes(view)
+  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles'].includes(view)
+  const inConfig = view === 'config-programs' || view === 'config-bundles'
 
   return (
     <aside className="w-64 min-h-screen bg-slate-900 text-white flex flex-col">
@@ -136,19 +145,41 @@ export function Sidebar() {
         )}
 
         {BOTTOM_NAV.map(item => (
-          <button
-            key={item.view}
-            onClick={() => setView(item.view)}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-              view === item.view
-                ? 'bg-teal-600 text-white'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+          <div key={item.view}>
+            <button
+              onClick={() => setView(item.view)}
+              className={cn(
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                inConfig && item.view === 'config-programs'
+                  ? 'bg-teal-600 text-white'
+                  : view === item.view
+                    ? 'bg-teal-600 text-white'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+              )}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+            {item.view === 'config-programs' && inConfig && (
+              <div className="mt-0.5 space-y-0.5">
+                {CONFIG_NAV.map(sub => (
+                  <button
+                    key={sub.view}
+                    onClick={() => setView(sub.view)}
+                    className={cn(
+                      'w-full flex items-center gap-3 pl-6 pr-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      view === sub.view
+                        ? 'bg-teal-600 text-white'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    )}
+                  >
+                    {sub.icon}
+                    {sub.label}
+                  </button>
+                ))}
+              </div>
             )}
-          >
-            {item.icon}
-            {item.label}
-          </button>
+          </div>
         ))}
       </nav>
 

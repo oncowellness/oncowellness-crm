@@ -178,3 +178,5 @@ export type View =
   | 'clinical-dashboard'
   | 'bundles'
   | 'calendar'
+  | 'config-programs'
+  | 'config-bundles'

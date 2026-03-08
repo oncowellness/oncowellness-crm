@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react'
-import { Search, Filter, AlertTriangle, CheckCircle, AlertCircle, User } from 'lucide-react'
+import { Search, Filter, AlertTriangle, CheckCircle, AlertCircle, User, UserPlus } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { PHASE_LABELS, type Phase, type AlertStatus } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
+import { NewPatientModal } from './NewPatientModal'
 
 const ALERT_CONFIG: Record<AlertStatus, { label: string; icon: React.ReactNode; classes: string }> = {
   verde: { label: 'Estable', icon: <CheckCircle size={14} />, classes: 'bg-green-100 text-green-700' },
@@ -26,6 +27,7 @@ export function PatientList() {
   const [search, setSearch] = useState('')
   const [filterPhase, setFilterPhase] = useState<Phase | 'all'>('all')
   const [filterAlert, setFilterAlert] = useState<AlertStatus | 'all'>('all')
+  const [showNewModal, setShowNewModal] = useState(false)
 
   const filtered = useMemo(() => {
     return patients.filter(p => {
@@ -46,21 +48,38 @@ export function PatientList() {
   const redCount = useMemo(() => patients.filter(p => p.alertStatus === 'rojo').length, [patients])
   const yellowCount = useMemo(() => patients.filter(p => p.alertStatus === 'amarillo').length, [patients])
 
+  function handleCreated(id: string) {
+    setShowNewModal(false)
+    if (id) { selectPatient(id); setView('patient-detail') }
+  }
+
   return (
     <div className="p-6 space-y-5">
-      {/* Summary stats */}
-      <div className="grid grid-cols-4 gap-4">
-        {[
-          { label: 'Total Pacientes', value: patients.length, color: 'text-slate-700', bg: 'bg-white' },
-          { label: 'Alerta Roja', value: redCount, color: 'text-red-600', bg: 'bg-red-50' },
-          { label: 'Atención', value: yellowCount, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-          { label: 'Estables', value: patients.length - redCount - yellowCount, color: 'text-green-600', bg: 'bg-green-50' },
-        ].map(s => (
-          <div key={s.label} className={`${s.bg} rounded-xl border border-slate-200 p-4`}>
-            <p className="text-xs text-slate-500 mb-1">{s.label}</p>
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
+      {showNewModal && (
+        <NewPatientModal onClose={() => setShowNewModal(false)} onCreated={handleCreated} />
+      )}
+
+      {/* Summary stats + Add button */}
+      <div className="flex items-center gap-4">
+        <div className="grid grid-cols-4 gap-4 flex-1">
+          {[
+            { label: 'Total Pacientes', value: patients.length, color: 'text-slate-700', bg: 'bg-white' },
+            { label: 'Alerta Roja', value: redCount, color: 'text-red-600', bg: 'bg-red-50' },
+            { label: 'Atención', value: yellowCount, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+            { label: 'Estables', value: patients.length - redCount - yellowCount, color: 'text-green-600', bg: 'bg-green-50' },
+          ].map(s => (
+            <div key={s.label} className={`${s.bg} rounded-xl border border-slate-200 p-4`}>
+              <p className="text-xs text-slate-500 mb-1">{s.label}</p>
+              <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => setShowNewModal(true)}
+          className="flex items-center gap-2 bg-teal-600 text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-teal-700 shrink-0 shadow-sm"
+        >
+          <UserPlus size={16} /> Añadir Paciente
+        </button>
       </div>
 
       {/* Filters */}

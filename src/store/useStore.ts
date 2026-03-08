@@ -18,6 +18,7 @@ interface CRMState {
   assignBundle: (patientId: string, bundleCode: string, programCodes: string[]) => void
   sendContent: (patientId: string, contentCode: string) => void
   acknowledgeCrisis: (patientId: string, crisisId: string) => void
+  addPatient: (patient: Omit<Patient, 'id' | 'handgrip' | 'sixMWT' | 'phq9' | 'gad7' | 'facitf' | 'eortc' | 'sessions' | 'contentItems' | 'crisisOrders' | 'clinicalNotes'>) => void
   getPatient: (id: string) => Patient | undefined
 }
 
@@ -176,6 +177,24 @@ export const useStore = create<CRMState>((set, get) => ({
         }
       }),
     }))
+  },
+
+  addPatient: (data) => {
+    const newPatient: Patient = {
+      ...data,
+      id: `P${String(Date.now()).slice(-4)}`,
+      handgrip: [],
+      sixMWT: [],
+      phq9: [],
+      gad7: [],
+      facitf: [],
+      eortc: [],
+      sessions: [],
+      contentItems: [],
+      crisisOrders: [],
+      clinicalNotes: [],
+    }
+    set(state => ({ patients: [...state.patients, newPatient] }))
   },
 }))
 

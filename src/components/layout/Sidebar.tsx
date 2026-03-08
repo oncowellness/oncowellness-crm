@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
-import type { View } from '../../types'
+import type { View, Patient } from '../../types'
 import { cn } from '../../lib/utils'
 
 const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
@@ -32,6 +32,43 @@ const PATIENT_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Dashboard Clínico', icon: <BarChart2 size={16} />, view: 'clinical-dashboard' },
 ]
 
+interface PatientMenuProps {
+  patient: Patient
+  currentView: View
+  onNavigate: (view: View) => void
+}
+
+function PatientSidebarMenu({ patient, currentView, onNavigate }: PatientMenuProps) {
+  return (
+    <div className="my-2 py-2 border-y border-slate-800 bg-slate-800/30 rounded-lg">
+      {/* Patient context label */}
+      <div className="flex items-center gap-2 px-3 mb-2">
+        <ChevronRight size={12} className="text-teal-400 shrink-0" />
+        <p className="text-[11px] text-teal-400 font-semibold uppercase tracking-wide truncate">
+          {patient.name}
+        </p>
+      </div>
+      <div className="space-y-0.5">
+        {PATIENT_NAV.map(item => (
+          <button
+            key={item.view}
+            onClick={() => onNavigate(item.view)}
+            className={cn(
+              'w-full flex items-center gap-3 pl-6 pr-3 py-2 rounded-lg text-sm font-medium transition-colors',
+              currentView === item.view
+                ? 'bg-teal-600 text-white'
+                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+            )}
+          >
+            {item.icon}
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function Sidebar() {
   const { view, setView, patients, selectedPatientId } = useStore()
 
@@ -41,6 +78,7 @@ export function Sidebar() {
   )
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
+  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients'].includes(view)
 
   return (
     <aside className="w-64 min-h-screen bg-slate-900 text-white flex flex-col">
@@ -89,33 +127,12 @@ export function Sidebar() {
         ))}
 
         {/* Patient sub-nav — only shown when a patient is selected */}
-        {selectedPatient && (
-          <div className="my-2 py-2 border-y border-slate-800 bg-slate-800/30 rounded-lg">
-            {/* Patient context label */}
-            <div className="flex items-center gap-2 px-3 mb-2">
-              <ChevronRight size={12} className="text-teal-400 shrink-0" />
-              <p className="text-[11px] text-teal-400 font-semibold uppercase tracking-wide truncate">
-                {selectedPatient.name}
-              </p>
-            </div>
-            <div className="space-y-0.5">
-              {PATIENT_NAV.map(item => (
-                <button
-                  key={item.view}
-                  onClick={() => setView(item.view)}
-                  className={cn(
-                    'w-full flex items-center gap-3 pl-6 pr-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    view === item.view
-                      ? 'bg-teal-600 text-white'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                  )}
-                >
-                  {item.icon}
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
+        {showPatientMenu && (
+          <PatientSidebarMenu
+            patient={selectedPatient}
+            currentView={view}
+            onNavigate={setView}
+          />
         )}
 
         {BOTTOM_NAV.map(item => (

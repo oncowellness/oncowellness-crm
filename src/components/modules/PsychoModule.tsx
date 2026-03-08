@@ -5,6 +5,7 @@ import {
 import { Brain, AlertTriangle, CheckCircle, Plus, Info } from 'lucide-react'
 import { useStore, computePHQ9Severity } from '../../store/useStore'
 import { formatDate, cn } from '../../lib/utils'
+import { PHASE_CONTENT_RULES } from '../../data/content'
 import type { Patient } from '../../types'
 
 const PHQ9_QUESTIONS = [
@@ -42,11 +43,8 @@ export function PsychoModule({ patient: propPatient }: Props) {
 
   if (!patient) return <div className="p-6 text-slate-400">Selecciona un paciente</div>
 
-  // Motor de reglas: Lógica movida antes del return para que no se renderice como texto
-  let contenido: string[] = []
-  if ((patient as any).fase === "F2") {
-    contenido = ["LB-01", "LB-02", "LB-05"]
-  }
+  // Motor de reglas: Obtener contenido basado en la fase actual del paciente
+  const contenido = PHASE_CONTENT_RULES[patient.currentPhase] || []
 
   const totalScore = answers.reduce((s, a) => s + a, 0)
   const severity = computePHQ9Severity(totalScore)
@@ -107,7 +105,7 @@ export function PsychoModule({ patient: propPatient }: Props) {
       {/* Visualización de recursos asignados por el motor de reglas */}
       {contenido.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-700 mb-2">Recursos Asignados (Fase {(patient as any).fase})</h3>
+          <h3 className="text-sm font-bold text-slate-700 mb-2">Recursos Asignados (Fase {patient.currentPhase})</h3>
           <div className="flex gap-2">
             {contenido.map(item => (
               <span key={item} className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-md border border-slate-200">

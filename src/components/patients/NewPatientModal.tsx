@@ -66,17 +66,17 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
   const step2Valid = diagnosis.trim().length > 0 && cancerType.trim().length > 0 && oncologist.trim().length > 0
   const canNext = step === 1 ? step1Valid : step === 2 ? step2Valid : true
 
-  function handleSubmit() {
-    const newData = {
+  function buildPatientData() {
+    return {
       name: name.trim(),
-      age: parseInt(age),
+      age: parseInt(age) || 0,
       gender,
       email: email.trim(),
       phone: phone.trim(),
-      diagnosis: diagnosis.trim(),
-      cancerType: cancerType.trim(),
+      diagnosis: diagnosis.trim() || '—',
+      cancerType: cancerType.trim() || '—',
       stage: stage.trim() || '—',
-      oncologist: oncologist.trim(),
+      oncologist: oncologist.trim() || '—',
       diagnosisDate,
       currentPhase,
       mindState,
@@ -84,6 +84,17 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
       assignedPrograms,
       assignedBundles,
     }
+  }
+
+  function handleSubmit() {
+    const newData = buildPatientData()
+    addPatient(newData)
+    const created = [...useStore.getState().patients].reverse().find(p => p.name === newData.name)
+    onCreated(created?.id ?? '')
+  }
+
+  function handleQuickSave() {
+    const newData = buildPatientData()
     addPatient(newData)
     const created = [...useStore.getState().patients].reverse().find(p => p.name === newData.name)
     onCreated(created?.id ?? '')
@@ -337,13 +348,24 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
           </div>
 
           {step < 3 ? (
-            <button
-              onClick={() => setStep(s => (s + 1) as Step)}
-              disabled={!canNext}
-              className="flex items-center gap-1.5 text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Siguiente <ChevronRight size={14} />
-            </button>
+            <div className="flex items-center gap-2">
+              {step === 1 && (
+                <button
+                  onClick={handleQuickSave}
+                  disabled={!step1Valid}
+                  className="flex items-center gap-1.5 text-sm border border-teal-600 text-teal-700 px-4 py-2 rounded-lg hover:bg-teal-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Check size={14} /> Guardar ahora
+                </button>
+              )}
+              <button
+                onClick={() => setStep(s => (s + 1) as Step)}
+                disabled={!canNext}
+                className="flex items-center gap-1.5 text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Siguiente <ChevronRight size={14} />
+              </button>
+            </div>
           ) : (
             <button
               onClick={handleSubmit}

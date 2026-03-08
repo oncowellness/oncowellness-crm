@@ -1,0 +1,265 @@
+import type { Patient } from '../types'
+import { CONTENT_LIBRARY, PHASE_CONTENT_RULES } from './content'
+
+function buildContent(phase: Patient['currentPhase']): Patient['contentItems'] {
+  const codes = PHASE_CONTENT_RULES[phase] ?? []
+  return CONTENT_LIBRARY
+    .filter(c => codes.includes(c.code))
+    .map(c => ({ ...c, enabled: true, sentDate: new Date().toISOString().split('T')[0] }))
+}
+
+export const MOCK_PATIENTS: Patient[] = [
+  {
+    id: 'P001',
+    name: 'María García López',
+    age: 52,
+    gender: 'F',
+    email: 'mgarcia@email.com',
+    phone: '612 345 678',
+    diagnosis: 'Carcinoma ductal invasivo',
+    cancerType: 'Mama',
+    stage: 'IIB',
+    oncologist: 'Dr. Rodríguez Pérez',
+    diagnosisDate: '2025-11-15',
+    currentPhase: 'F3',
+    mindState: 'Ansioso',
+    alertStatus: 'amarillo',
+    handgrip: [
+      { date: '2025-11-20', dominantHand: 18.2, nonDominantHand: 16.8, isBaseline: true },
+      { date: '2026-01-15', dominantHand: 17.1, nonDominantHand: 15.9 },
+      { date: '2026-02-20', dominantHand: 19.4, nonDominantHand: 17.8 },
+    ],
+    sixMWT: [
+      { date: '2025-11-20', distanceMeters: 420, heartRatePeak: 132, fatigue: 5, isBaseline: true },
+      { date: '2026-01-15', distanceMeters: 385, heartRatePeak: 138, fatigue: 7 },
+      { date: '2026-02-20', distanceMeters: 440, heartRatePeak: 128, fatigue: 4 },
+    ],
+    phq9: [
+      {
+        date: '2025-11-20',
+        answers: [1, 1, 1, 0, 1, 1, 0, 0, 0],
+        totalScore: 5,
+        severity: 'mild',
+      },
+      {
+        date: '2026-01-15',
+        answers: [2, 2, 2, 1, 2, 1, 1, 0, 1],
+        totalScore: 12,
+        severity: 'moderate',
+      },
+    ],
+    gad7: [
+      { date: '2025-11-20', answers: [1, 1, 1, 0, 1, 1, 0], totalScore: 5, severity: 'mild' },
+      { date: '2026-01-15', answers: [2, 2, 1, 2, 1, 2, 1], totalScore: 11, severity: 'moderate' },
+    ],
+    facitf: [
+      { date: '2025-11-20', answers: [3, 3, 2, 3, 2, 3, 3, 2, 3, 3, 2, 3, 3], totalScore: 35 },
+      { date: '2026-01-15', answers: [2, 2, 1, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2], totalScore: 22 },
+      { date: '2026-02-20', answers: [3, 3, 2, 3, 2, 3, 3, 2, 3, 3, 2, 3, 3], totalScore: 34 },
+    ],
+    eortc: [
+      { date: '2025-11-20', globalHealth: 66, physicalFunction: 73, roleFunction: 67, emotionalFunction: 58, cognitiveFunction: 72, socialFunction: 67, fatigue: 44, nausea: 17, pain: 33 },
+      { date: '2026-01-15', globalHealth: 50, physicalFunction: 60, roleFunction: 50, emotionalFunction: 42, cognitiveFunction: 58, socialFunction: 50, fatigue: 67, nausea: 33, pain: 50 },
+      { date: '2026-02-20', globalHealth: 67, physicalFunction: 73, roleFunction: 67, emotionalFunction: 58, cognitiveFunction: 75, socialFunction: 67, fatigue: 44, nausea: 17, pain: 33 },
+    ],
+    assignedPrograms: ['FX-01', 'FX-03', 'PS-02', 'PS-03', 'NU-01', 'NU-02', 'NU-03', 'EO-01'],
+    assignedBundles: ['PC-01', 'PC-03'],
+    sessions: [
+      { id: 's1', programCode: 'FX-03', date: '2026-02-10', status: 'realizada', therapist: 'Elena Martínez' },
+      { id: 's2', programCode: 'PS-03', date: '2026-02-17', status: 'realizada', therapist: 'Carlos Vega' },
+      { id: 's3', programCode: 'FX-03', date: '2026-02-24', status: 'realizada', therapist: 'Elena Martínez' },
+      { id: 's4', programCode: 'PS-01', date: '2026-01-20', status: 'realizada', notes: 'Intervención en crisis activada por PHQ-9=12', therapist: 'Carlos Vega' },
+      { id: 's5', programCode: 'FX-03', date: '2026-03-10', status: 'confirmada', therapist: 'Elena Martínez' },
+      { id: 's6', programCode: 'NU-02', date: '2026-03-12', status: 'pendiente', therapist: 'Lucía Sánchez' },
+    ],
+    contentItems: buildContent('F3'),
+    crisisOrders: [
+      {
+        id: 'co1',
+        date: '2026-01-15',
+        trigger: 'PHQ-9 >= 10 (Puntuación: 12)',
+        program: 'PS-01',
+        status: 'atendida',
+        notes: 'Sesión de intervención en crisis realizada el 20/01/2026',
+      },
+    ],
+    clinicalNotes: [
+      { id: 'cn1', date: '2025-11-20', author: 'Dr. Rodríguez Pérez', content: 'Derivación a Oncowellness para soporte integral durante tratamiento QT x6 ciclos + RT posterior.', type: 'interconsulta' },
+      { id: 'cn2', date: '2026-01-15', author: 'Carlos Vega', content: 'Paciente presenta síntomas depresivos moderados. PHQ-9: 12. Se activa protocolo PS-01 urgente.', type: 'incidencia' },
+    ],
+  },
+  {
+    id: 'P002',
+    name: 'Antonio Sánchez Ruiz',
+    age: 64,
+    gender: 'M',
+    email: 'asanchez@email.com',
+    phone: '635 987 654',
+    diagnosis: 'Adenocarcinoma de pulmón',
+    cancerType: 'Pulmón',
+    stage: 'IIIA',
+    oncologist: 'Dra. Fernández Gómez',
+    diagnosisDate: '2026-01-08',
+    currentPhase: 'F2',
+    mindState: 'Vulnerable',
+    alertStatus: 'verde',
+    handgrip: [
+      { date: '2026-01-15', dominantHand: 28.4, nonDominantHand: 26.1, isBaseline: true },
+      { date: '2026-02-15', dominantHand: 30.2, nonDominantHand: 27.8 },
+    ],
+    sixMWT: [
+      { date: '2026-01-15', distanceMeters: 350, heartRatePeak: 145, fatigue: 7, isBaseline: true },
+      { date: '2026-02-15', distanceMeters: 395, heartRatePeak: 138, fatigue: 5 },
+    ],
+    phq9: [
+      { date: '2026-01-15', answers: [1, 0, 1, 0, 0, 1, 0, 0, 0], totalScore: 3, severity: 'minimal' },
+    ],
+    gad7: [
+      { date: '2026-01-15', answers: [1, 0, 1, 0, 1, 0, 0], totalScore: 3, severity: 'minimal' },
+    ],
+    facitf: [
+      { date: '2026-01-15', answers: [2, 3, 2, 3, 1, 2, 2, 2, 3, 2, 2, 3, 2], totalScore: 29 },
+      { date: '2026-02-15', answers: [3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 2, 3, 3], totalScore: 36 },
+    ],
+    eortc: [
+      { date: '2026-01-15', globalHealth: 50, physicalFunction: 53, roleFunction: 50, emotionalFunction: 67, cognitiveFunction: 67, socialFunction: 67, fatigue: 56, nausea: 0, pain: 33 },
+      { date: '2026-02-15', globalHealth: 67, physicalFunction: 67, roleFunction: 67, emotionalFunction: 75, cognitiveFunction: 75, socialFunction: 75, fatigue: 33, nausea: 0, pain: 17 },
+    ],
+    assignedPrograms: ['FX-01', 'FX-02', 'FX-06', 'PS-02', 'NU-01', 'TS-01'],
+    assignedBundles: ['PC-01', 'PC-02'],
+    sessions: [
+      { id: 's7', programCode: 'FX-02', date: '2026-02-01', status: 'realizada', therapist: 'Elena Martínez' },
+      { id: 's8', programCode: 'FX-06', date: '2026-02-08', status: 'realizada', therapist: 'Elena Martínez' },
+      { id: 's9', programCode: 'FX-02', date: '2026-03-01', status: 'confirmada', therapist: 'Elena Martínez' },
+    ],
+    contentItems: buildContent('F2'),
+    crisisOrders: [],
+    clinicalNotes: [
+      { id: 'cn3', date: '2026-01-08', author: 'Dra. Fernández Gómez', content: 'Derivación para prehab previo a lobectomía programada. Buen estado general, motivado.', type: 'interconsulta' },
+    ],
+  },
+  {
+    id: 'P003',
+    name: 'Carmen Jiménez Torres',
+    age: 45,
+    gender: 'F',
+    email: 'cjimenez@email.com',
+    phone: '678 123 456',
+    diagnosis: 'Linfoma Hodgkin clásico',
+    cancerType: 'Linfoma',
+    stage: 'IIA',
+    oncologist: 'Dr. Morales Blanco',
+    diagnosisDate: '2025-08-20',
+    currentPhase: 'F6',
+    mindState: 'Resiliente',
+    alertStatus: 'verde',
+    handgrip: [
+      { date: '2025-09-01', dominantHand: 22.1, nonDominantHand: 20.4, isBaseline: true },
+      { date: '2025-12-01', dominantHand: 24.8, nonDominantHand: 22.9 },
+      { date: '2026-02-01', dominantHand: 27.3, nonDominantHand: 25.1 },
+    ],
+    sixMWT: [
+      { date: '2025-09-01', distanceMeters: 480, heartRatePeak: 128, fatigue: 3, isBaseline: true },
+      { date: '2025-12-01', distanceMeters: 510, heartRatePeak: 120, fatigue: 2 },
+      { date: '2026-02-01', distanceMeters: 545, heartRatePeak: 115, fatigue: 1 },
+    ],
+    phq9: [
+      { date: '2025-09-01', answers: [1, 1, 1, 0, 0, 0, 0, 0, 0], totalScore: 3, severity: 'minimal' },
+      { date: '2025-12-01', answers: [0, 1, 0, 0, 0, 0, 0, 0, 0], totalScore: 1, severity: 'minimal' },
+    ],
+    gad7: [
+      { date: '2025-09-01', answers: [1, 0, 1, 0, 0, 0, 0], totalScore: 2, severity: 'minimal' },
+    ],
+    facitf: [
+      { date: '2025-09-01', answers: [2, 2, 1, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2], totalScore: 22 },
+      { date: '2025-12-01', answers: [3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 2, 3, 3], totalScore: 36 },
+      { date: '2026-02-01', answers: [4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3, 4, 4], totalScore: 50 },
+    ],
+    eortc: [
+      { date: '2025-09-01', globalHealth: 67, physicalFunction: 73, roleFunction: 67, emotionalFunction: 67, cognitiveFunction: 75, socialFunction: 75, fatigue: 33, nausea: 0, pain: 17 },
+      { date: '2026-02-01', globalHealth: 83, physicalFunction: 93, roleFunction: 83, emotionalFunction: 83, cognitiveFunction: 83, socialFunction: 92, fatigue: 11, nausea: 0, pain: 0 },
+    ],
+    assignedPrograms: ['FX-09', 'PS-04', 'NU-04', 'TS-03'],
+    assignedBundles: ['PC-04'],
+    sessions: [
+      { id: 's10', programCode: 'FX-09', date: '2026-02-05', status: 'realizada', therapist: 'Elena Martínez' },
+      { id: 's11', programCode: 'PS-04', date: '2026-02-12', status: 'realizada', therapist: 'Carlos Vega' },
+      { id: 's12', programCode: 'FX-09', date: '2026-03-05', status: 'pendiente', therapist: 'Elena Martínez' },
+    ],
+    contentItems: buildContent('F6'),
+    crisisOrders: [],
+    clinicalNotes: [
+      { id: 'cn4', date: '2025-08-20', author: 'Dr. Morales Blanco', content: 'Paciente finaliza tratamiento ABVD x6. Remisión completa. Derivación para programa supervivencia.', type: 'interconsulta' },
+    ],
+  },
+  {
+    id: 'P004',
+    name: 'Roberto Delgado Marín',
+    age: 71,
+    gender: 'M',
+    email: 'rdelgado@email.com',
+    phone: '654 789 012',
+    diagnosis: 'Adenocarcinoma de próstata',
+    cancerType: 'Próstata',
+    stage: 'IVB',
+    oncologist: 'Dr. Herrera Luna',
+    diagnosisDate: '2025-06-10',
+    currentPhase: 'F8',
+    mindState: 'Depresivo',
+    alertStatus: 'rojo',
+    handgrip: [
+      { date: '2025-06-20', dominantHand: 24.5, nonDominantHand: 22.3, isBaseline: true },
+      { date: '2025-10-20', dominantHand: 19.8, nonDominantHand: 17.6 },
+      { date: '2026-01-20', dominantHand: 17.2, nonDominantHand: 15.1 },
+    ],
+    sixMWT: [
+      { date: '2025-06-20', distanceMeters: 310, heartRatePeak: 142, fatigue: 7, isBaseline: true },
+      { date: '2025-10-20', distanceMeters: 265, heartRatePeak: 148, fatigue: 8 },
+      { date: '2026-01-20', distanceMeters: 230, heartRatePeak: 150, fatigue: 9 },
+    ],
+    phq9: [
+      { date: '2025-06-20', answers: [2, 2, 2, 1, 2, 2, 1, 1, 0], totalScore: 13, severity: 'moderate' },
+      { date: '2025-10-20', answers: [2, 3, 2, 2, 2, 2, 1, 1, 1], totalScore: 16, severity: 'moderately_severe' },
+    ],
+    gad7: [
+      { date: '2025-06-20', answers: [2, 2, 1, 2, 1, 1, 1], totalScore: 10, severity: 'moderate' },
+    ],
+    facitf: [
+      { date: '2025-06-20', answers: [1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1], totalScore: 9 },
+      { date: '2025-10-20', answers: [0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0], totalScore: 3 },
+    ],
+    eortc: [
+      { date: '2025-06-20', globalHealth: 33, physicalFunction: 40, roleFunction: 33, emotionalFunction: 25, cognitiveFunction: 50, socialFunction: 33, fatigue: 78, nausea: 33, pain: 67 },
+      { date: '2026-01-20', globalHealth: 25, physicalFunction: 27, roleFunction: 17, emotionalFunction: 17, cognitiveFunction: 42, socialFunction: 17, fatigue: 89, nausea: 50, pain: 83 },
+    ],
+    assignedPrograms: ['FX-08', 'PS-01', 'PS-06', 'NU-02', 'TS-03'],
+    assignedBundles: ['PC-05'],
+    sessions: [
+      { id: 's13', programCode: 'PS-01', date: '2026-01-22', status: 'realizada', therapist: 'Carlos Vega', notes: 'Crisis activada por PHQ-9=16' },
+      { id: 's14', programCode: 'FX-08', date: '2026-02-05', status: 'realizada', therapist: 'Elena Martínez' },
+      { id: 's15', programCode: 'PS-06', date: '2026-02-26', status: 'confirmada', therapist: 'Carlos Vega' },
+    ],
+    contentItems: buildContent('F8'),
+    crisisOrders: [
+      {
+        id: 'co2',
+        date: '2025-06-20',
+        trigger: 'PHQ-9 >= 10 (Puntuación: 13)',
+        program: 'PS-01',
+        status: 'atendida',
+        notes: 'Intervención inicial en crisis realizada',
+      },
+      {
+        id: 'co3',
+        date: '2025-10-20',
+        trigger: 'PHQ-9 >= 10 (Puntuación: 16)',
+        program: 'PS-01',
+        status: 'pendiente',
+      },
+    ],
+    clinicalNotes: [
+      { id: 'cn5', date: '2025-06-10', author: 'Dr. Herrera Luna', content: 'Enfermedad diseminada con metástasis óseas. Ingresa en programa de cuidados paliativos integrados.', type: 'interconsulta' },
+      { id: 'cn6', date: '2025-10-20', author: 'Carlos Vega', content: 'Deterioro importante del estado emocional. PHQ-9: 16. Se reactiva PS-01.', type: 'incidencia' },
+    ],
+  },
+]

@@ -40,6 +40,8 @@ export function PatientDetail() {
   const { data: clinicalNotes = [] } = useClinicalNotes(selectedPatientId)
   const updatePatient = useUpdatePatient()
   const acknowledgeCrisis = useAcknowledgeCrisis()
+  const logPhaseTransition = useLogPhaseTransition()
+  const { user, profile } = useAuth()
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<any>({})

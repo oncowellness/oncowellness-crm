@@ -57,7 +57,7 @@ export function PatientList() {
     if (id) { selectPatient(id); setView('patient-detail') }
   }
 
-  if (isLoading) return <div className="p-6 text-slate-400">Cargando pacientes...</div>
+  if (isLoading) return <PatientListSkeleton />
 
   return (
     <div className="p-6 space-y-5">

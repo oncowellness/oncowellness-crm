@@ -148,7 +148,9 @@ export function Sidebar() {
           />
         )}
 
-        {BOTTOM_NAV.map(item => (
+        {BOTTOM_NAV
+          .filter(item => item.view !== 'incentives' || isAdmin)
+          .map(item => (
           <div key={item.view}>
             <button
               onClick={() => setView(item.view)}
@@ -187,9 +189,20 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
-      <div className="px-4 py-4 border-t border-slate-700">
-        <p className="text-xs text-slate-500">v1.0 · Modelo MSK</p>
+      {/* Footer with user info */}
+      <div className="px-4 py-3 border-t border-slate-700">
+        {profile && (
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 bg-teal-600 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0">
+              {profile.nombre.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-slate-200 truncate">{profile.nombre}</p>
+              <p className="text-[10px] text-slate-500 truncate">{profile.email}</p>
+            </div>
+          </div>
+        )}
+        <p className="text-[10px] text-slate-600">v1.0 · Modelo MSK</p>
       </div>
     </aside>
   )

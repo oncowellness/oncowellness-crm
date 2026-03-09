@@ -53,7 +53,7 @@ export function Sidebar() {
   const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente').length
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
-  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles', 'incentives', 'analytics'].includes(view)
+  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles', 'incentives', 'analytics', 'financial'].includes(view)
   const inConfig = view === 'config-programs' || view === 'config-bundles'
 
   return (

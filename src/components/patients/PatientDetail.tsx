@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle, AlertCircle, Calendar, Phone, Mail, Stethoscope, FileText, Package, Pencil, X, Save } from 'lucide-react'
+import { AlertTriangle, CheckCircle, AlertCircle, Calendar, Phone, Mail, Stethoscope, FileText, Package, Pencil, X, Save, TrendingUp } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatient, useUpdatePatient } from '@/hooks/usePatients'
 import { usePrograms } from '@/hooks/usePrograms'
@@ -9,6 +9,7 @@ import { useCrisisOrders, useAcknowledgeCrisis } from '@/hooks/useCrisisOrders'
 import { useClinicalNotes } from '@/hooks/useClinicalNotes'
 import { JourneyTimeline } from './JourneyTimeline'
 import { ClinicalReport } from '../reports/ClinicalReport'
+import { ClinicalTrends } from './ClinicalTrends'
 import { formatDate, cn } from '../../lib/utils'
 import { PHASE_LABELS, type AlertStatus, type Phase, type MindState } from '../../types'
 
@@ -246,6 +247,9 @@ export function PatientDetail() {
           <p className="text-xs text-slate-400 mt-1">Rango 0–52 (mayor = mejor)</p>
         </div>
       </div>
+
+      {/* Clinical Trends Charts */}
+      <ClinicalTrends tests={clinicalTests} />
 
       {/* Programs & Sessions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

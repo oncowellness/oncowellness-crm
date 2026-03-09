@@ -83,6 +83,12 @@ function ViewRouter() {
           <StaffManagement />
         </RoleGuard>
       )
+    case 'financial':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <FinancialDashboard />
+        </RoleGuard>
+      )
     default:
       return <MainDashboard />
   }

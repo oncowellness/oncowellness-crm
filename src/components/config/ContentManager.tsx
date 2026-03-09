@@ -123,7 +123,7 @@ export function ContentManager() {
   const isPending = createMut.isPending || updateMut.isPending
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-emerald-100 rounded-lg flex items-center justify-center">

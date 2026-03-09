@@ -15,6 +15,7 @@ import { ConfigBundles } from '@/components/config/ConfigBundles'
 import { ContentManager } from '@/components/config/ContentManager'
 import { ActivityFeed } from '@/components/activity/ActivityFeed'
 import { AnalyticsDashboard } from '@/components/dashboard/AnalyticsDashboard'
+import { OutcomesDashboard } from '@/components/dashboard/OutcomesDashboard'
 import IncentivesPanel from '@/components/incentives/IncentivesPanel'
 import { FinancialDashboard } from '@/components/financial/FinancialDashboard'
 import LoginPage from '@/components/auth/LoginPage'
@@ -83,6 +84,12 @@ function ViewRouter() {
       return (
         <RoleGuard allowedRoles={['admin', 'director']}>
           <AnalyticsDashboard />
+        </RoleGuard>
+      )
+    case 'outcomes':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <OutcomesDashboard />
         </RoleGuard>
       )
     case 'invitations':

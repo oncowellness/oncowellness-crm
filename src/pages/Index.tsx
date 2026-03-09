@@ -11,6 +11,7 @@ import { BundleManager } from '@/components/bundles/BundleManager'
 import { CalendarView } from '@/components/calendar/CalendarView'
 import { ConfigPrograms } from '@/components/config/ConfigPrograms'
 import { ConfigBundles } from '@/components/config/ConfigBundles'
+import { ActivityFeed } from '@/components/activity/ActivityFeed'
 import IncentivesPanel from '@/components/incentives/IncentivesPanel'
 import LoginPage from '@/components/auth/LoginPage'
 import EmergencyLockPage from '@/pages/EmergencyLockPage'
@@ -22,6 +23,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useStore } from '@/store/useStore'
 import { useInactivityLogout } from '@/hooks/useInactivityLogout'
 import { useEmergencyLock } from '@/hooks/useEmergencyLock'
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'
 
 function ViewRouter() {
   const { view } = useStore()

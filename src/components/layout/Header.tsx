@@ -22,6 +22,7 @@ const VIEW_TITLES: Record<string, string> = {
   calendar: 'Calendario de Citas',
   bundles: 'Gestor de Bundles',
   incentives: 'Liquidación de Incentivos',
+  security: 'Seguridad de la Cuenta',
   'config-programs': 'Configuración de Programas',
   'config-bundles': 'Configuración de Packs',
 }

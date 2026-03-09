@@ -25,7 +25,7 @@ export function MainDashboard() {
   const { data: crisisOrders = [] } = useAllCrisisOrders()
   const { data: allSessions = [] } = useAllSessions()
 
-  if (pLoading) return <div className="p-6 text-slate-400">Cargando...</div>
+  if (pLoading) return <DashboardSkeleton />
 
   const redAlerts = patients.filter(p => p.alert_status === 'rojo')
   const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente')

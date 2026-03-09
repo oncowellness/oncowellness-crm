@@ -43,6 +43,8 @@ function ViewRouter() {
       return <PatientList />
     case 'patient-detail':
       return <PatientDetail />
+    case 'goals':
+      return <ClinicalGoals />
     case 'physio':
       return <PhysioModule />
     case 'psycho':

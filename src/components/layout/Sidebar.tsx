@@ -38,6 +38,7 @@ const CONFIG_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
 
 const PATIENT_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Ficha', icon: <Users size={16} />, view: 'patient-detail' },
+  { label: 'Metas', icon: <Heart size={16} />, view: 'goals' },
   { label: 'Fisioterapia', icon: <Activity size={16} />, view: 'physio' },
   { label: 'Psico-oncología', icon: <Brain size={16} />, view: 'psycho' },
   { label: 'Empoderamiento', icon: <BookOpen size={16} />, view: 'empowerment' },

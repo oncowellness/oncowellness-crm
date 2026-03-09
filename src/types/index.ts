@@ -220,3 +220,4 @@ export type View =
   | 'activity'
   | 'analytics'
   | 'financial'
+  | 'goals'

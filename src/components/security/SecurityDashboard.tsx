@@ -71,7 +71,7 @@ export function SecurityDashboard() {
   const passwordValidation = validatePassword(newPassword)
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-teal-500/10 rounded-xl flex items-center justify-center">
           <Shield size={20} className="text-teal-500" />

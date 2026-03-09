@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
-import { Search, Filter, AlertTriangle, CheckCircle, AlertCircle, User, UserPlus } from 'lucide-react'
+import { Search, Filter, AlertTriangle, CheckCircle, AlertCircle, User, UserPlus, Users } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatients } from '@/hooks/usePatients'
 import { PHASE_LABELS, type Phase, type AlertStatus } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
 import { NewPatientModal } from './NewPatientModal'
+import { PatientListSkeleton } from '@/components/ui/LoadingSkeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const ALERT_CONFIG: Record<AlertStatus, { label: string; icon: React.ReactNode; classes: string }> = {
   verde: { label: 'Estable', icon: <CheckCircle size={14} />, classes: 'bg-green-100 text-green-700' },
@@ -55,7 +57,7 @@ export function PatientList() {
     if (id) { selectPatient(id); setView('patient-detail') }
   }
 
-  if (isLoading) return <div className="p-6 text-slate-400">Cargando pacientes...</div>
+  if (isLoading) return <PatientListSkeleton />
 
   return (
     <div className="p-6 space-y-5">
@@ -191,8 +193,22 @@ export function PatientList() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-10 text-slate-400 text-sm">
-                  No se encontraron pacientes con los filtros aplicados
+                <td colSpan={7}>
+                  {patients.length === 0 ? (
+                    <EmptyState
+                      icon={Users}
+                      title="Sin pacientes registrados"
+                      description="Comienza registrando tu primer paciente para gestionar su journey oncológico completo."
+                      action={{ label: '+ Añadir Paciente', onClick: () => setShowNewModal(true) }}
+                    />
+                  ) : (
+                    <EmptyState
+                      icon={Search}
+                      title="Sin resultados"
+                      description="No se encontraron pacientes con los filtros aplicados. Prueba ajustando los criterios de búsqueda."
+                      className="py-10"
+                    />
+                  )}
                 </td>
               </tr>
             )}

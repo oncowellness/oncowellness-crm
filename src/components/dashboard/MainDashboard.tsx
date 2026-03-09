@@ -7,6 +7,8 @@ import { useAllCrisisOrders } from '@/hooks/useAllCrisisOrders'
 import { useAllSessions } from '@/hooks/useSessions'
 import { PHASE_LABELS, type Phase } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
+import { DashboardSkeleton } from '@/components/ui/LoadingSkeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const PHASE_COLORS: Record<Phase, string> = {
   F1: 'bg-blue-100 text-blue-700',
@@ -25,7 +27,7 @@ export function MainDashboard() {
   const { data: crisisOrders = [] } = useAllCrisisOrders()
   const { data: allSessions = [] } = useAllSessions()
 
-  if (pLoading) return <div className="p-6 text-slate-400">Cargando...</div>
+  if (pLoading) return <DashboardSkeleton />
 
   const redAlerts = patients.filter(p => p.alert_status === 'rojo')
   const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente')
@@ -125,7 +127,7 @@ export function MainDashboard() {
               </button>
             ))}
             {upcomingSessions.length === 0 && (
-              <p className="text-xs text-slate-400 text-center py-4">Sin citas próximas</p>
+              <EmptyState icon={Calendar} title="Sin citas próximas" description="Aún no hay sesiones programadas. Usa el Calendario para crear la primera cita." className="py-8" />
             )}
           </div>
         </div>

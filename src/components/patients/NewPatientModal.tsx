@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { X, UserPlus, ChevronRight, ChevronLeft, Check } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { X, UserPlus, ChevronRight, ChevronLeft, Check, AlertCircle } from 'lucide-react'
 import { useCreatePatient } from '@/hooks/usePatients'
 import { PHASE_LABELS, type Phase, type MindState } from '../../types'
 import { cn } from '../../lib/utils'
+import { toast } from 'sonner'
 
 interface Props {
   onClose: () => void
@@ -25,23 +26,30 @@ const STEP_LABELS: Record<Step, string> = {
 }
 
 function Field({
-  label, required, children,
-}: { label: string; required?: boolean; children: React.ReactNode }) {
+  label, required, children, error,
+}: { label: string; required?: boolean; children: React.ReactNode; error?: string }) {
   return (
     <div>
       <label className="text-xs font-medium text-slate-600 block mb-1">
         {label}{required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
       {children}
+      {error && (
+        <p className="flex items-center gap-1 text-xs text-red-500 mt-1">
+          <AlertCircle size={12} /> {error}
+        </p>
+      )}
     </div>
   )
 }
 
 const inputCls = 'w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400'
+const inputErrorCls = 'w-full text-sm border border-red-300 rounded-lg px-3 py-2 bg-red-50/30 focus:outline-none focus:ring-2 focus:ring-red-400'
 
 export function NewPatientModal({ onClose, onCreated }: Props) {
   const createPatient = useCreatePatient()
   const [step, setStep] = useState<Step>(1)
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const [name, setName] = useState('')
   const [age, setAge] = useState('')
@@ -58,9 +66,33 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
   const [currentPhase, setCurrentPhase] = useState<Phase>('F1')
   const [mindState, setMindState] = useState<MindState>('Activo')
 
-  const step1Valid = name.trim().length > 0 && age.trim().length > 0
+  const validations = {
+    name: touched.name && !name.trim() ? 'El nombre es obligatorio' : undefined,
+    age: touched.age && (!age.trim() || parseInt(age) < 1 || parseInt(age) > 120) ? 'Edad entre 1 y 120' : undefined,
+    email: touched.email && email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'Email no válido' : undefined,
+    diagnosis: touched.diagnosis && !diagnosis.trim() ? 'El diagnóstico es obligatorio' : undefined,
+    cancerType: touched.cancerType && !cancerType.trim() ? 'Selecciona un tipo' : undefined,
+    oncologist: touched.oncologist && !oncologist.trim() ? 'El oncólogo es obligatorio' : undefined,
+  }
+
+  const step1Valid = name.trim().length > 0 && age.trim().length > 0 && parseInt(age) >= 1 && parseInt(age) <= 120 && (!email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
   const step2Valid = diagnosis.trim().length > 0 && cancerType.trim().length > 0 && oncologist.trim().length > 0
   const canNext = step === 1 ? step1Valid : step === 2 ? step2Valid : true
+
+  function markTouched(...fields: string[]) {
+    setTouched(t => { const n = { ...t }; fields.forEach(f => n[f] = true); return n })
+  }
+
+  function tryNext() {
+    if (step === 1) {
+      markTouched('name', 'age', 'email')
+      if (!step1Valid) return
+    } else if (step === 2) {
+      markTouched('diagnosis', 'cancerType', 'oncologist')
+      if (!step2Valid) return
+    }
+    setStep(s => (s + 1) as Step)
+  }
 
   function buildInsert() {
     return {
@@ -82,11 +114,15 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
   }
 
   async function handleSubmit() {
+    if (step === 1) markTouched('name', 'age', 'email')
+    if (!step1Valid) return
     try {
       const result = await createPatient.mutateAsync(buildInsert())
+      toast.success('Paciente creado correctamente')
       onCreated(result.id)
     } catch (e) {
       console.error('Error creating patient:', e)
+      toast.error('Error al crear el paciente')
     }
   }
 
@@ -135,12 +171,12 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
         <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
           {step === 1 && (
             <>
-              <Field label="Nombre completo" required>
-                <input autoFocus type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ej. Ana Martínez López" className={inputCls} />
+              <Field label="Nombre completo" required error={validations.name}>
+                <input autoFocus type="text" value={name} onChange={e => setName(e.target.value)} onBlur={() => markTouched('name')} placeholder="Ej. Ana Martínez López" className={validations.name ? inputErrorCls : inputCls} maxLength={100} />
               </Field>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Edad" required>
-                  <input type="number" min="1" max="120" value={age} onChange={e => setAge(e.target.value)} placeholder="Ej. 54" className={inputCls} />
+                <Field label="Edad" required error={validations.age}>
+                  <input type="number" min="1" max="120" value={age} onChange={e => setAge(e.target.value)} onBlur={() => markTouched('age')} placeholder="Ej. 54" className={validations.age ? inputErrorCls : inputCls} />
                 </Field>
                 <Field label="Sexo">
                   <div className="flex gap-2 mt-0.5">
@@ -150,23 +186,23 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
                   </div>
                 </Field>
               </div>
-              <Field label="Email"><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="paciente@email.com" className={inputCls} /></Field>
-              <Field label="Teléfono"><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="612 345 678" className={inputCls} /></Field>
+              <Field label="Email" error={validations.email}><input type="email" value={email} onChange={e => setEmail(e.target.value)} onBlur={() => markTouched('email')} placeholder="paciente@email.com" className={validations.email ? inputErrorCls : inputCls} maxLength={255} /></Field>
+              <Field label="Teléfono"><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="612 345 678" className={inputCls} maxLength={20} /></Field>
             </>
           )}
           {step === 2 && (
             <>
-              <Field label="Diagnóstico" required><input autoFocus type="text" value={diagnosis} onChange={e => setDiagnosis(e.target.value)} placeholder="Ej. Carcinoma ductal invasivo" className={inputCls} /></Field>
+              <Field label="Diagnóstico" required error={validations.diagnosis}><input autoFocus type="text" value={diagnosis} onChange={e => setDiagnosis(e.target.value)} onBlur={() => markTouched('diagnosis')} placeholder="Ej. Carcinoma ductal invasivo" className={validations.diagnosis ? inputErrorCls : inputCls} maxLength={200} /></Field>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Tipo de cáncer" required>
-                  <select value={cancerType} onChange={e => setCancerType(e.target.value)} className={inputCls}>
+                <Field label="Tipo de cáncer" required error={validations.cancerType}>
+                  <select value={cancerType} onChange={e => { setCancerType(e.target.value); markTouched('cancerType') }} className={validations.cancerType ? inputErrorCls : inputCls}>
                     <option value="">— Seleccionar —</option>
                     {CANCER_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </Field>
-                <Field label="Estadio TNM"><input type="text" value={stage} onChange={e => setStage(e.target.value)} placeholder="Ej. IIB, IIIA" className={inputCls} /></Field>
+                <Field label="Estadio TNM"><input type="text" value={stage} onChange={e => setStage(e.target.value)} placeholder="Ej. IIB, IIIA" className={inputCls} maxLength={20} /></Field>
               </div>
-              <Field label="Oncólogo/a responsable" required><input type="text" value={oncologist} onChange={e => setOncologist(e.target.value)} placeholder="Ej. Dr. García Pérez" className={inputCls} /></Field>
+              <Field label="Oncólogo/a responsable" required error={validations.oncologist}><input type="text" value={oncologist} onChange={e => setOncologist(e.target.value)} onBlur={() => markTouched('oncologist')} placeholder="Ej. Dr. García Pérez" className={validations.oncologist ? inputErrorCls : inputCls} maxLength={100} /></Field>
               <Field label="Fecha de diagnóstico"><input type="date" value={diagnosisDate} onChange={e => setDiagnosisDate(e.target.value)} className={inputCls} /></Field>
             </>
           )}
@@ -221,7 +257,7 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
                   <Check size={14} /> Guardar ahora
                 </button>
               )}
-              <button onClick={() => setStep(s => (s + 1) as Step)} disabled={!canNext} className="flex items-center gap-1.5 text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed">
+              <button onClick={tryNext} className="flex items-center gap-1.5 text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed">
                 Siguiente <ChevronRight size={14} />
               </button>
             </div>

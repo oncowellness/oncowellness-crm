@@ -31,6 +31,7 @@ const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?
 const CONFIG_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Programas', icon: <Layers size={16} />, view: 'config-programs' },
   { label: 'Packs', icon: <Package size={16} />, view: 'config-bundles' },
+  { label: 'Contenido', icon: <BookOpen size={16} />, view: 'config-content' },
 ]
 
 const PATIENT_NAV: { label: string; icon: React.ReactNode; view: View }[] = [

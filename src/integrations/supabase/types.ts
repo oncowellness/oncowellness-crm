@@ -526,6 +526,8 @@ export type Database = {
         | "psicologo"
         | "nutricionista"
         | "director"
+        | "entrenador"
+        | "psiconcologo"
       incentive_concept: "fijo" | "hito_clinico" | "video_rrss" | "bono_extra"
       incentive_status: "pendiente" | "aprobado" | "pagado"
       mind_state_enum:
@@ -682,6 +684,8 @@ export const Constants = {
         "psicologo",
         "nutricionista",
         "director",
+        "entrenador",
+        "psiconcologo",
       ],
       incentive_concept: ["fijo", "hito_clinico", "video_rrss", "bono_extra"],
       incentive_status: ["pendiente", "aprobado", "pagado"],

@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          patient_id: string | null
+          resource_id: string | null
+          resource_type: string
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          patient_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          patient_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       bundles: {
         Row: {
           code: string
@@ -486,6 +525,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_governance: {
+        Row: {
+          emergency_lock_active: boolean
+          id: string
+          locked_at: string | null
+          locked_by: string | null
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          emergency_lock_active?: boolean
+          id?: string
+          locked_at?: string | null
+          locked_by?: string | null
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          emergency_lock_active?: boolean
+          id?: string
+          locked_at?: string | null
+          locked_by?: string | null
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

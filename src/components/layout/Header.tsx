@@ -142,7 +142,7 @@ export function Header() {
         {/* Notification bell with dropdown */}
         <div className="relative" ref={notifRef}>
           <button
-            onClick={() => setShowNotifs(!showNotifs)}
+            onClick={() => { setShowNotifs(!showNotifs); if (!showNotifs) markAllRead() }}
             className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors"
           >
             <Bell size={18} className="text-slate-600" />

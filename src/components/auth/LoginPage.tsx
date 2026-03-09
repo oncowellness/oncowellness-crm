@@ -6,13 +6,10 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Heart, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { validatePassword } from '@/lib/passwordPolicy'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isSignUp, setIsSignUp] = useState(false)
-  const [fullName, setFullName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -22,34 +19,12 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      if (isSignUp) {
-        const validation = validatePassword(password)
-        if (!validation.isValid) {
-          toast({ title: 'Contraseña insegura', description: validation.errors[0], variant: 'destructive' })
-          setLoading(false)
-          return
-        }
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: fullName },
-            emailRedirectTo: window.location.origin,
-          },
-        })
-        if (error) throw error
-        toast({
-          title: 'Registro exitoso',
-          description: 'Revisa tu correo para confirmar tu cuenta.',
-        })
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw new Error('Credenciales inválidas. Inténtalo de nuevo.')
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw new Error('Credenciales inválidas. Inténtalo de nuevo.')
     } catch (err: any) {
       toast({
-        title: 'Error',
-        description: err.message || 'Ha ocurrido un error',
+        title: 'Error de autenticación',
+        description: 'Las credenciales proporcionadas no son válidas.',
         variant: 'destructive',
       })
     } finally {
@@ -81,20 +56,6 @@ export default function LoginPage() {
 
         <CardContent className="pt-4">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-slate-700">Nombre completo</Label>
-                <Input
-                  id="fullName"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  placeholder="Dr. Ana García"
-                  required
-                  className="border-slate-200 focus:border-teal-400 focus:ring-teal-400"
-                />
-              </div>
-            )}
-
             <div className="space-y-2">
               <Label htmlFor="email" className="text-slate-700">Correo electrónico</Label>
               <div className="relative">
@@ -122,7 +83,6 @@ export default function LoginPage() {
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  minLength={6}
                   className="pl-10 pr-10 border-slate-200 focus:border-teal-400 focus:ring-teal-400"
                 />
                 <button
@@ -140,18 +100,13 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white font-medium shadow-md shadow-teal-500/20"
             >
-              {loading ? 'Procesando...' : isSignUp ? 'Crear cuenta' : 'Iniciar sesión'}
+              {loading ? 'Procesando...' : 'Iniciar sesión'}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-teal-600 hover:text-teal-700 font-medium"
-            >
-              {isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿Nuevo profesional? Crear cuenta'}
-            </button>
-          </div>
+          <p className="mt-6 text-center text-xs text-slate-400">
+            Acceso exclusivo por invitación. Contacta a tu administrador.
+          </p>
         </CardContent>
       </Card>
     </div>

@@ -56,6 +56,12 @@ function ViewRouter() {
       )
     case 'security':
       return <SecurityDashboard />
+    case 'invitations':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <InviteUserPanel />
+        </RoleGuard>
+      )
     default:
       return <MainDashboard />
   }

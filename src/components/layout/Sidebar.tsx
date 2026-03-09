@@ -155,7 +155,7 @@ export function Sidebar() {
         )}
 
         {BOTTOM_NAV
-          .filter(item => item.view !== 'incentives' || isAdmin)
+          .filter(item => !item.adminOnly || isAdmin)
           .map(item => (
           <div key={item.view}>
             <button

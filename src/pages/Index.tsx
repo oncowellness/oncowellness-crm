@@ -91,6 +91,7 @@ function ViewRouter() {
         <RoleGuard allowedRoles={['admin', 'director']}>
           <OutcomesDashboard />
         </RoleGuard>
+      )
     case 'invitations':
       return (
         <RoleGuard allowedRoles={['admin', 'director']}>

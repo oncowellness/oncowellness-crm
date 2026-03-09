@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { X, UserPlus, ChevronRight, ChevronLeft, Check } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { X, UserPlus, ChevronRight, ChevronLeft, Check, AlertCircle } from 'lucide-react'
 import { useCreatePatient } from '@/hooks/usePatients'
 import { PHASE_LABELS, type Phase, type MindState } from '../../types'
 import { cn } from '../../lib/utils'
+import { toast } from 'sonner'
 
 interface Props {
   onClose: () => void

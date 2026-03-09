@@ -116,9 +116,18 @@ export function Sidebar() {
           return true
         }).map(item => (
           <div key={item.view}>
-            <button onClick={() => setView(item.view)} className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', inConfig && item.view === 'config-programs' ? 'bg-teal-600 text-white' : view === item.view ? 'bg-teal-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white')}>
+            <button onClick={() => setView(item.view)} className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', (inConfig && item.view === 'config-programs') || (inStaff && item.view === 'staff-management') ? 'bg-teal-600 text-white' : view === item.view ? 'bg-teal-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white')}>
               {item.icon}{item.label}
             </button>
+            {item.view === 'staff-management' && inStaff && (
+              <div className="mt-0.5 space-y-0.5">
+                {STAFF_NAV.map(sub => (
+                  <button key={sub.view} onClick={() => setView(sub.view)} className={cn('w-full flex items-center gap-3 pl-6 pr-3 py-2 rounded-lg text-sm font-medium transition-colors', view === sub.view ? 'bg-teal-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white')}>
+                    {sub.icon}{sub.label}
+                  </button>
+                ))}
+              </div>
+            )}
             {item.view === 'config-programs' && inConfig && (
               <div className="mt-0.5 space-y-0.5">
                 {CONFIG_NAV.map(sub => (

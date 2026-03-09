@@ -210,3 +210,4 @@ export type View =
   | 'calendar'
   | 'config-programs'
   | 'config-bundles'
+  | 'incentives'

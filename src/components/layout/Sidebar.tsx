@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Settings,
   Layers,
+  Coins,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import type { View, Patient } from '../../types'
@@ -23,6 +24,7 @@ const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
 
 const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Calendario', icon: <CalendarDays size={18} />, view: 'calendar' },
+  { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives' },
   { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs' },
 ]
 
@@ -86,7 +88,7 @@ export function Sidebar() {
   )
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
-  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles'].includes(view)
+  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles', 'incentives'].includes(view)
   const inConfig = view === 'config-programs' || view === 'config-bundles'
 
   return (

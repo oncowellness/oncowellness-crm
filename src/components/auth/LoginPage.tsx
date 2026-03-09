@@ -23,6 +23,12 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
+        const validation = validatePassword(password)
+        if (!validation.isValid) {
+          toast({ title: 'Contraseña insegura', description: validation.errors[0], variant: 'destructive' })
+          setLoading(false)
+          return
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,

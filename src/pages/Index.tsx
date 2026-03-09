@@ -3,6 +3,7 @@ import { Header } from '@/components/layout/Header'
 import { MainDashboard } from '@/components/dashboard/MainDashboard'
 import { PatientList } from '@/components/patients/PatientList'
 import { PatientDetail } from '@/components/patients/PatientDetail'
+import { ClinicalGoals } from '@/components/patients/ClinicalGoals'
 import { PhysioModule } from '@/components/modules/PhysioModule'
 import { PsychoModule } from '@/components/modules/PsychoModule'
 import { EmpowermentModule } from '@/components/modules/EmpowermentModule'
@@ -42,6 +43,8 @@ function ViewRouter() {
       return <PatientList />
     case 'patient-detail':
       return <PatientDetail />
+    case 'goals':
+      return <ClinicalGoals />
     case 'physio':
       return <PhysioModule />
     case 'psycho':

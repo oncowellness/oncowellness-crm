@@ -187,6 +187,74 @@ export type Database = {
           },
         ]
       }
+      clinical_goals: {
+        Row: {
+          baseline_value: number | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          current_value: number | null
+          deadline: string | null
+          description: string | null
+          id: string
+          metric_type: string | null
+          notes: string | null
+          patient_id: string
+          priority: string
+          status: string
+          target_unit: string | null
+          target_value: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          baseline_value?: number | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          current_value?: number | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          metric_type?: string | null
+          notes?: string | null
+          patient_id: string
+          priority?: string
+          status?: string
+          target_unit?: string | null
+          target_value?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          baseline_value?: number | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          current_value?: number | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          metric_type?: string | null
+          notes?: string | null
+          patient_id?: string
+          priority?: string
+          status?: string
+          target_unit?: string | null
+          target_value?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_goals_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinical_notes: {
         Row: {
           author_id: string | null

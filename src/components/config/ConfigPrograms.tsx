@@ -350,15 +350,9 @@ export function ConfigPrograms() {
                 {/* Expanded detail rows */}
                 {items.map(p => expandedId === p.id && editingId !== p.id && (
                   <tr key={`${p.id}-detail`} className="bg-slate-50 border-b border-slate-100">
-                    <td colSpan={7} className="px-5 py-4">
-                      <div className="max-h-80 overflow-y-auto pr-2">
+                    <td colSpan={5} className="px-5 py-4">
+                      <div className="max-h-96 overflow-y-auto pr-2">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                          {/* Identity & Structure */}
-                          <Detail label="Código" value={p.code} />
-                          <Detail label="Tipo / Área" value={`${p.tipo} – ${TYPE_LABELS[p.tipo] || p.tipo}`} />
-                          <Detail label="Nombre" value={p.nombre} />
-                          <Detail label="Descripción" value={p.descripcion || '—'} span={3} />
-
                           {/* Intervention */}
                           <Detail label="Tipo Intervención" value={p.tipo_intervencion || '—'} />
                           <Detail label="Modalidad Producto" value={p.modalidad || '—'} />
@@ -379,7 +373,6 @@ export function ConfigPrograms() {
                           })()}
 
                           {/* Clinical */}
-                          <Detail label="Objetivos Principales" value={p.objetivos || '—'} span={3} />
                           <Detail label="Contenidos / Técnicas" value={p.contenidos || '—'} span={3} />
                           <Detail label="Indicadores de Resultado" value={p.indicadores_resultado || '—'} span={3} />
 

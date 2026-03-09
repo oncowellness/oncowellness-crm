@@ -3,9 +3,9 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Users, ShieldCheck } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import type { Database } from '@/integrations/supabase/types'
@@ -22,7 +22,8 @@ const ROLE_LABELS: Record<AppRole, string> = {
   entrenador: 'Entrenador',
 }
 
-const ASSIGNABLE_ROLES: AppRole[] = [
+const ALL_ROLES: AppRole[] = [
+  'director',
   'admin',
   'fisioterapeuta',
   'psiconcologo',
@@ -37,7 +38,7 @@ interface StaffRow {
   email: string | null
   especialidad: string | null
   suspended: boolean
-  role: AppRole | null
+  roles: AppRole[]
 }
 
 export function StaffManagement() {
@@ -49,7 +50,6 @@ export function StaffManagement() {
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ['staff-management'],
     queryFn: async () => {
-      // Fetch profiles and roles
       const [profilesRes, rolesRes] = await Promise.all([
         supabase.from('profiles').select('user_id, nombre, email, especialidad, suspended'),
         supabase.from('user_roles').select('user_id, role'),
@@ -57,36 +57,47 @@ export function StaffManagement() {
       if (profilesRes.error) throw profilesRes.error
       if (rolesRes.error) throw rolesRes.error
 
-      const rolesMap = new Map<string, AppRole>()
-      rolesRes.data.forEach(r => rolesMap.set(r.user_id, r.role))
+      const rolesMap = new Map<string, AppRole[]>()
+      rolesRes.data.forEach(r => {
+        const existing = rolesMap.get(r.user_id) ?? []
+        existing.push(r.role)
+        rolesMap.set(r.user_id, existing)
+      })
 
       return (profilesRes.data ?? []).map(p => ({
         ...p,
         suspended: p.suspended ?? false,
-        role: rolesMap.get(p.user_id) ?? null,
+        roles: rolesMap.get(p.user_id) ?? [],
       })) as StaffRow[]
     },
   })
 
-  async function handleRoleChange(staffUserId: string, newRole: AppRole) {
+  async function handleRoleToggle(staffUserId: string, role: AppRole, enabled: boolean) {
     setUpdating(staffUserId)
     try {
-      // Delete existing role, then insert new one
-      await supabase.from('user_roles').delete().eq('user_id', staffUserId)
-      const { error } = await supabase.from('user_roles').insert({ user_id: staffUserId, role: newRole })
-      if (error) throw error
+      if (enabled) {
+        const { error } = await supabase.from('user_roles').insert({ user_id: staffUserId, role })
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('user_roles').delete()
+          .eq('user_id', staffUserId)
+          .eq('role', role)
+        if (error) throw error
+      }
 
-      // Audit
       await supabase.from('audit_logs').insert({
         user_id: user!.id,
-        action_type: 'role_changed',
+        action_type: enabled ? 'role_added' : 'role_removed',
         resource_type: 'user_roles',
         resource_id: staffUserId,
         user_email: user!.email,
-        metadata: { new_role: newRole },
+        metadata: { role, action: enabled ? 'added' : 'removed' },
       })
 
-      toast({ title: 'Rol actualizado', description: `Rol cambiado a ${ROLE_LABELS[newRole]}` })
+      toast({
+        title: enabled ? 'Rol asignado' : 'Rol eliminado',
+        description: `${ROLE_LABELS[role]} ${enabled ? 'añadido' : 'eliminado'}`,
+      })
       queryClient.invalidateQueries({ queryKey: ['staff-management'] })
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' })
@@ -112,9 +123,7 @@ export function StaffManagement() {
         user_email: user!.email,
       })
 
-      toast({
-        title: suspended ? 'Cuenta suspendida' : 'Cuenta reactivada',
-      })
+      toast({ title: suspended ? 'Cuenta suspendida' : 'Cuenta reactivada' })
       queryClient.invalidateQueries({ queryKey: ['staff-management'] })
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' })
@@ -124,10 +133,10 @@ export function StaffManagement() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-5xl">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-teal-500/10 rounded-xl flex items-center justify-center">
-          <ShieldCheck size={20} className="text-teal-500" />
+        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+          <ShieldCheck size={20} className="text-primary" />
         </div>
         <div>
           <h2 className="text-lg font-bold text-foreground">Gestión de Personal</h2>
@@ -152,55 +161,57 @@ export function StaffManagement() {
               {staff.map(s => {
                 const isSelf = s.user_id === user?.id
                 return (
-                  <div key={s.user_id} className="flex items-center gap-4 py-3">
-                    {/* Avatar */}
-                    <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center text-primary text-xs font-semibold shrink-0">
-                      {s.nombre.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
+                  <div key={s.user_id} className="py-4 space-y-3">
+                    <div className="flex items-center gap-4">
+                      {/* Avatar */}
+                      <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center text-primary text-xs font-semibold shrink-0">
+                        {s.nombre.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {s.nombre}
+                          {isSelf && <span className="text-muted-foreground ml-1">(tú)</span>}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">{s.email}</p>
+                      </div>
+
+                      {/* Status */}
+                      <div className="flex items-center gap-2">
+                        {s.suspended ? (
+                          <Badge variant="destructive" className="text-[10px]">Suspendido</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] border-emerald-300 text-emerald-700">Activo</Badge>
+                        )}
+                        {!isSelf && (
+                          <Switch
+                            checked={!s.suspended}
+                            onCheckedChange={(checked) => handleSuspendToggle(s.user_id, !checked)}
+                            disabled={updating === s.user_id}
+                          />
+                        )}
+                      </div>
                     </div>
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {s.nombre}
-                        {isSelf && <span className="text-muted-foreground ml-1">(tú)</span>}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">{s.email}</p>
-                    </div>
-
-                    {/* Role selector */}
-                    <div className="w-44">
-                      <Select
-                        value={s.role ?? ''}
-                        onValueChange={(v) => handleRoleChange(s.user_id, v as AppRole)}
-                        disabled={isSelf || updating === s.user_id}
-                      >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Sin rol" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ASSIGNABLE_ROLES.map(r => (
-                            <SelectItem key={r} value={r} className="text-xs">
-                              {ROLE_LABELS[r]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Status */}
-                    <div className="flex items-center gap-2 w-28 justify-end">
-                      {s.suspended ? (
-                        <Badge variant="destructive" className="text-[10px]">Suspendido</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-200">Activo</Badge>
-                      )}
-                      {!isSelf && (
-                        <Switch
-                          checked={!s.suspended}
-                          onCheckedChange={(checked) => handleSuspendToggle(s.user_id, !checked)}
-                          disabled={updating === s.user_id}
-                        />
-                      )}
+                    {/* Multi-role checkboxes */}
+                    <div className="pl-13 flex flex-wrap gap-x-5 gap-y-2 ml-13">
+                      {ALL_ROLES.map(role => {
+                        const hasRole = s.roles.includes(role)
+                        return (
+                          <label
+                            key={role}
+                            className="flex items-center gap-2 cursor-pointer select-none"
+                          >
+                            <Checkbox
+                              checked={hasRole}
+                              onCheckedChange={(checked) => handleRoleToggle(s.user_id, role, !!checked)}
+                              disabled={isSelf || updating === s.user_id}
+                            />
+                            <span className="text-xs text-foreground">{ROLE_LABELS[role]}</span>
+                          </label>
+                        )
+                      })}
                     </div>
                   </div>
                 )

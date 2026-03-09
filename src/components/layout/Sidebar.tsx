@@ -219,9 +219,16 @@ export function Sidebar() {
               <p className="text-xs font-medium text-slate-200 truncate">{profile.nombre}</p>
               <p className="text-[10px] text-slate-500 truncate">{profile.email}</p>
               {roles.length > 0 && (
-                <p className="text-[10px] text-teal-400 font-medium capitalize mt-0.5">
-                  {roles[0] === 'admin' ? 'Administrador' : roles[0] === 'director' ? 'Director' : roles[0] === 'fisioterapeuta' ? 'Fisioterapeuta' : roles[0] === 'psiconcologo' ? 'Psico-oncólogo' : roles[0] === 'nutricionista' ? 'Nutricionista' : roles[0] === 'entrenador' ? 'Entrenador' : roles[0]}
-                </p>
+                <div className="flex flex-wrap gap-1 mt-0.5">
+                  {roles.map(r => {
+                    const label = r === 'admin' ? 'Admin' : r === 'director' ? 'Director' : r === 'fisioterapeuta' ? 'Fisio' : r === 'psiconcologo' ? 'Psico' : r === 'nutricionista' ? 'Nutri' : r === 'entrenador' ? 'Entren.' : r
+                    return (
+                      <span key={r} className="text-[9px] bg-teal-500/20 text-teal-300 px-1.5 py-0.5 rounded font-medium">
+                        {label}
+                      </span>
+                    )
+                  })}
+                </div>
               )}
             </div>
           </div>

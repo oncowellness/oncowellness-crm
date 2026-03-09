@@ -9,6 +9,7 @@ import { EmpowermentModule } from '@/components/modules/EmpowermentModule'
 import { ClinicalDashboard } from '@/components/dashboard/ClinicalDashboard'
 import { BundleManager } from '@/components/bundles/BundleManager'
 import { CalendarView } from '@/components/calendar/CalendarView'
+import { StaffCalendar } from '@/components/calendar/StaffCalendar'
 import { ConfigPrograms } from '@/components/config/ConfigPrograms'
 import { ConfigBundles } from '@/components/config/ConfigBundles'
 import { ContentManager } from '@/components/config/ContentManager'
@@ -52,6 +53,12 @@ function ViewRouter() {
       return <BundleManager />
     case 'calendar':
       return <CalendarView />
+    case 'staff-calendar':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <StaffCalendar />
+        </RoleGuard>
+      )
     case 'config-programs':
       return <ConfigPrograms />
     case 'config-bundles':

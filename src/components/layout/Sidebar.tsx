@@ -18,6 +18,7 @@ const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
 
 const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?: boolean; directorOnly?: boolean }[] = [
   { label: 'Calendario', icon: <CalendarDays size={18} />, view: 'calendar' },
+  { label: 'Agenda Equipo', icon: <Users size={18} />, view: 'staff-calendar', adminOnly: true },
   { label: 'Actividad', icon: <Clock size={18} />, view: 'activity' },
   { label: 'Analítica', icon: <BarChart2 size={18} />, view: 'analytics', adminOnly: true },
   { label: 'Invitaciones', icon: <UserPlus size={18} />, view: 'invitations', adminOnly: true },
@@ -54,7 +55,7 @@ export function Sidebar() {
   const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente').length
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
-  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles', 'config-content', 'incentives', 'analytics', 'financial'].includes(view)
+  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'staff-calendar', 'patients', 'config-programs', 'config-bundles', 'config-content', 'incentives', 'analytics', 'financial'].includes(view)
   const inConfig = view === 'config-programs' || view === 'config-bundles' || view === 'config-content'
 
   return (

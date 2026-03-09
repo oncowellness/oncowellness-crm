@@ -16,6 +16,8 @@ import {
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { useAuth } from '@/contexts/AuthContext'
+import { EmergencyKillSwitch } from '@/components/security/EmergencyKillSwitch'
+import { SystemStatusIndicator } from '@/components/security/SystemStatusIndicator'
 import type { View, Patient } from '../../types'
 import { cn } from '../../lib/utils'
 

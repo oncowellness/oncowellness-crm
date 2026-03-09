@@ -193,6 +193,13 @@ export function Sidebar() {
         ))}
       </nav>
 
+      {/* Emergency Kill Switch - admin only */}
+      {isAdmin && (
+        <div className="px-3 py-2 border-t border-slate-700">
+          <EmergencyKillSwitch />
+        </div>
+      )}
+
       {/* Footer with user info */}
       <div className="px-4 py-3 border-t border-slate-700">
         {profile && (
@@ -206,6 +213,7 @@ export function Sidebar() {
             </div>
           </div>
         )}
+        <SystemStatusIndicator />
         <p className="text-[10px] text-slate-600">v1.0 · Modelo MSK</p>
       </div>
     </aside>

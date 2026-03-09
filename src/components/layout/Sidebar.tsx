@@ -157,7 +157,11 @@ export function Sidebar() {
         )}
 
         {BOTTOM_NAV
-          .filter(item => !item.adminOnly || isAdmin)
+          .filter(item => {
+            if (item.directorOnly && !isDirector) return false
+            if (item.adminOnly && !isAdmin) return false
+            return true
+          })
           .map(item => (
           <div key={item.view}>
             <button

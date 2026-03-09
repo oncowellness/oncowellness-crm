@@ -44,7 +44,7 @@ export default function LoginPage() {
         })
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
+        if (error) throw new Error('Credenciales inválidas. Inténtalo de nuevo.')
       }
     } catch (err: any) {
       toast({

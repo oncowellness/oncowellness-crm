@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          alert_type: Database["public"]["Enums"]["alert_type"]
+          created_at: string
+          id: string
+          message: string | null
+          patient_id: string
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          source_metric: string | null
+          source_test_id: string | null
+          source_value: number | null
+        }
+        Insert: {
+          alert_type: Database["public"]["Enums"]["alert_type"]
+          created_at?: string
+          id?: string
+          message?: string | null
+          patient_id: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          source_metric?: string | null
+          source_test_id?: string | null
+          source_value?: number | null
+        }
+        Update: {
+          alert_type?: Database["public"]["Enums"]["alert_type"]
+          created_at?: string
+          id?: string
+          message?: string | null
+          patient_id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          source_metric?: string | null
+          source_test_id?: string | null
+          source_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alerts_source_test_id_fkey"
+            columns: ["source_test_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action_type: string
@@ -654,7 +714,9 @@ export type Database = {
       }
     }
     Enums: {
+      alert_severity: "low" | "medium" | "high" | "critical"
       alert_status_enum: "verde" | "amarillo" | "rojo"
+      alert_type: "emotional_risk" | "fall_risk" | "clinical_decline" | "custom"
       app_role:
         | "admin"
         | "fisioterapeuta"
@@ -812,7 +874,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      alert_severity: ["low", "medium", "high", "critical"],
       alert_status_enum: ["verde", "amarillo", "rojo"],
+      alert_type: ["emotional_risk", "fall_risk", "clinical_decline", "custom"],
       app_role: [
         "admin",
         "fisioterapeuta",

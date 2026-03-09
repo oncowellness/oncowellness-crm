@@ -31,6 +31,7 @@ const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?
 const CONFIG_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Programas', icon: <Layers size={16} />, view: 'config-programs' },
   { label: 'Packs', icon: <Package size={16} />, view: 'config-bundles' },
+  { label: 'Contenido', icon: <BookOpen size={16} />, view: 'config-content' },
 ]
 
 const PATIENT_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
@@ -53,8 +54,8 @@ export function Sidebar() {
   const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente').length
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
-  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles', 'incentives', 'analytics', 'financial'].includes(view)
-  const inConfig = view === 'config-programs' || view === 'config-bundles'
+  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles', 'config-content', 'incentives', 'analytics', 'financial'].includes(view)
+  const inConfig = view === 'config-programs' || view === 'config-bundles' || view === 'config-content'
 
   return (
     <aside className="w-64 min-h-screen bg-slate-900 text-white flex flex-col">

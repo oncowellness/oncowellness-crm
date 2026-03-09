@@ -11,6 +11,7 @@ import { BundleManager } from '@/components/bundles/BundleManager'
 import { CalendarView } from '@/components/calendar/CalendarView'
 import { ConfigPrograms } from '@/components/config/ConfigPrograms'
 import { ConfigBundles } from '@/components/config/ConfigBundles'
+import { ContentManager } from '@/components/config/ContentManager'
 import { ActivityFeed } from '@/components/activity/ActivityFeed'
 import { AnalyticsDashboard } from '@/components/dashboard/AnalyticsDashboard'
 import IncentivesPanel from '@/components/incentives/IncentivesPanel'
@@ -55,6 +56,12 @@ function ViewRouter() {
       return <ConfigPrograms />
     case 'config-bundles':
       return <ConfigBundles />
+    case 'config-content':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <ContentManager />
+        </RoleGuard>
+      )
     case 'incentives':
       return (
         <RoleGuard allowedRoles={['admin', 'director']}>

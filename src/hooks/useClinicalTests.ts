@@ -21,6 +21,20 @@ export function useClinicalTests(patientId: string | null) {
   })
 }
 
+export function useAllClinicalTests() {
+  return useQuery({
+    queryKey: ['clinical_tests_all'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clinical_tests')
+        .select('*, patients(nombre, fase_journey, assigned_programs)')
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      return data
+    },
+  })
+}
+
 export function useCreateClinicalTest() {
   const qc = useQueryClient()
   return useMutation({

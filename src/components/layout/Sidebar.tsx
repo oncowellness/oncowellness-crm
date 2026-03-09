@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, Activity, Brain, BookOpen, BarChart2, Package,
-  Heart, CalendarDays, ChevronRight, Settings, Layers, Coins, Shield, UserPlus, Clock, Landmark, TrendingUp,
+  Heart, CalendarDays, ChevronRight, Settings, Layers, Coins, Shield, UserPlus, Clock, Landmark, TrendingUp, UsersRound,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatients } from '@/hooks/usePatients'
@@ -23,7 +23,7 @@ const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?
   { label: 'Analítica', icon: <BarChart2 size={18} />, view: 'analytics', adminOnly: true },
   { label: 'Outcomes', icon: <TrendingUp size={18} />, view: 'outcomes', adminOnly: true },
   { label: 'Finanzas', icon: <Landmark size={18} />, view: 'financial', adminOnly: true },
-  { label: 'Gestión Personal', icon: <Shield size={18} />, view: 'staff-management', directorOnly: true },
+  { label: 'Gestión Personal', icon: <UsersRound size={18} />, view: 'staff-management', directorOnly: true },
   { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
   { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs', adminOnly: true },
 ]

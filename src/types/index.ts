@@ -212,6 +212,7 @@ export type View =
   | 'config-bundles'
   | 'config-content'
   | 'staff-calendar'
+  | 'outcomes'
   | 'incentives'
   | 'security'
   | 'invitations'

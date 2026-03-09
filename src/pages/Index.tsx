@@ -59,6 +59,8 @@ function ViewRouter() {
       )
     case 'security':
       return <SecurityDashboard />
+    case 'activity':
+      return <ActivityFeed />
     case 'invitations':
       return (
         <RoleGuard allowedRoles={['admin', 'director']}>

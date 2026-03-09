@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, Activity, Brain, BookOpen, BarChart2, Package,
-  Heart, CalendarDays, ChevronRight, Settings, Layers, Coins, Shield, UserPlus, Clock, Landmark,
+  Heart, CalendarDays, ChevronRight, Settings, Layers, Coins, Shield, UserPlus, Clock, Landmark, TrendingUp,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatients } from '@/hooks/usePatients'

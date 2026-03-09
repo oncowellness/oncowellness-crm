@@ -933,31 +933,82 @@ export type Database = {
       }
       programs: {
         Row: {
+          canal_captacion: string | null
           code: string
+          contenidos: string | null
+          coste_sesion: number | null
           descripcion: string | null
           duracion: string | null
+          duracion_semanas: number | null
+          frecuencia: string | null
           id: string
+          indicadores_resultado: string | null
+          mind_state_paciente: string | null
+          modalidad: string | null
+          momento_journey: string | null
           nombre: string
+          objetivos: string | null
+          paquetes_relacionados: string | null
+          perfil_paciente: string | null
+          precio_sesion: number | null
+          productos_asociados: string | null
+          recursos: string | null
           sesiones: number | null
+          sintomas: string | null
           tipo: Database["public"]["Enums"]["program_type"]
+          tipo_intervencion: string | null
         }
         Insert: {
+          canal_captacion?: string | null
           code: string
+          contenidos?: string | null
+          coste_sesion?: number | null
           descripcion?: string | null
           duracion?: string | null
+          duracion_semanas?: number | null
+          frecuencia?: string | null
           id?: string
+          indicadores_resultado?: string | null
+          mind_state_paciente?: string | null
+          modalidad?: string | null
+          momento_journey?: string | null
           nombre: string
+          objetivos?: string | null
+          paquetes_relacionados?: string | null
+          perfil_paciente?: string | null
+          precio_sesion?: number | null
+          productos_asociados?: string | null
+          recursos?: string | null
           sesiones?: number | null
+          sintomas?: string | null
           tipo: Database["public"]["Enums"]["program_type"]
+          tipo_intervencion?: string | null
         }
         Update: {
+          canal_captacion?: string | null
           code?: string
+          contenidos?: string | null
+          coste_sesion?: number | null
           descripcion?: string | null
           duracion?: string | null
+          duracion_semanas?: number | null
+          frecuencia?: string | null
           id?: string
+          indicadores_resultado?: string | null
+          mind_state_paciente?: string | null
+          modalidad?: string | null
+          momento_journey?: string | null
           nombre?: string
+          objetivos?: string | null
+          paquetes_relacionados?: string | null
+          perfil_paciente?: string | null
+          precio_sesion?: number | null
+          productos_asociados?: string | null
+          recursos?: string | null
           sesiones?: number | null
+          sintomas?: string | null
           tipo?: Database["public"]["Enums"]["program_type"]
+          tipo_intervencion?: string | null
         }
         Relationships: []
       }
@@ -1158,7 +1209,17 @@ export type Database = {
       payment_method: "transfer" | "card" | "cash" | "other"
       phase_journey: "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7" | "F8"
       plan_billing_cycle: "monthly" | "annual" | "one_time"
-      program_type: "FX" | "PS" | "NU" | "EO" | "TS"
+      program_type:
+        | "FX"
+        | "PS"
+        | "NU"
+        | "EO"
+        | "TS"
+        | "TO"
+        | "SX"
+        | "PA"
+        | "ED"
+        | "PI"
       session_status: "pendiente" | "confirmada" | "realizada" | "cancelada"
       subscription_status: "active" | "paused" | "cancelled" | "expired"
       test_type:
@@ -1332,7 +1393,18 @@ export const Constants = {
       payment_method: ["transfer", "card", "cash", "other"],
       phase_journey: ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8"],
       plan_billing_cycle: ["monthly", "annual", "one_time"],
-      program_type: ["FX", "PS", "NU", "EO", "TS"],
+      program_type: [
+        "FX",
+        "PS",
+        "NU",
+        "EO",
+        "TS",
+        "TO",
+        "SX",
+        "PA",
+        "ED",
+        "PI",
+      ],
       session_status: ["pendiente", "confirmada", "realizada", "cancelada"],
       subscription_status: ["active", "paused", "cancelled", "expired"],
       test_type: [

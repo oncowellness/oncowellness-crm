@@ -8,6 +8,7 @@ import { useSessions } from '@/hooks/useSessions'
 import { useCrisisOrders, useAcknowledgeCrisis } from '@/hooks/useCrisisOrders'
 import { useClinicalNotes } from '@/hooks/useClinicalNotes'
 import { JourneyTimeline } from './JourneyTimeline'
+import { ClinicalReport } from '../reports/ClinicalReport'
 import { formatDate, cn } from '../../lib/utils'
 import { PHASE_LABELS, type AlertStatus, type Phase, type MindState } from '../../types'
 

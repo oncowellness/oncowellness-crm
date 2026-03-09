@@ -23,7 +23,7 @@ const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?
   { label: 'Analítica', icon: <BarChart2 size={18} />, view: 'analytics', adminOnly: true },
   { label: 'Outcomes', icon: <TrendingUp size={18} />, view: 'outcomes', adminOnly: true },
   { label: 'Finanzas', icon: <Landmark size={18} />, view: 'financial', adminOnly: true },
-  { label: 'Gestión Personal', icon: <Shield size={18} />, view: 'staff-management', directorOnly: true },
+  { label: 'Gestión Personal', icon: <Users size={18} />, view: 'staff-management', directorOnly: true },
   { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
   { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs', adminOnly: true },
 ]

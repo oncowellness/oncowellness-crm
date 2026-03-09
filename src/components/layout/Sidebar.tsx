@@ -21,6 +21,7 @@ const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?
   { label: 'Agenda Equipo', icon: <Users size={18} />, view: 'staff-calendar', adminOnly: true },
   { label: 'Actividad', icon: <Clock size={18} />, view: 'activity' },
   { label: 'Analítica', icon: <BarChart2 size={18} />, view: 'analytics', adminOnly: true },
+  { label: 'Outcomes', icon: <TrendingUp size={18} />, view: 'outcomes', adminOnly: true },
   { label: 'Invitaciones', icon: <UserPlus size={18} />, view: 'invitations', adminOnly: true },
   { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives', adminOnly: true },
   { label: 'Finanzas', icon: <Landmark size={18} />, view: 'financial', adminOnly: true },

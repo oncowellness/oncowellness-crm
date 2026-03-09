@@ -14,6 +14,7 @@ import {
   Coins,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import { useAuth } from '@/contexts/AuthContext'
 import type { View, Patient } from '../../types'
 import { cn } from '../../lib/utils'
 

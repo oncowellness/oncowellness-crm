@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Settings,
   Layers,
+  Coins,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import type { View, Patient } from '../../types'

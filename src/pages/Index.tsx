@@ -63,6 +63,12 @@ function ViewRouter() {
           <InviteUserPanel />
         </RoleGuard>
       )
+    case 'staff-management':
+      return (
+        <RoleGuard allowedRoles={['director']}>
+          <StaffManagement />
+        </RoleGuard>
+      )
     default:
       return <MainDashboard />
   }

@@ -363,19 +363,48 @@ export function ConfigPrograms() {
                 {items.map(p => expandedId === p.id && editingId !== p.id && (
                   <tr key={`${p.id}-detail`} className="bg-slate-50 border-b border-slate-100">
                     <td colSpan={7} className="px-5 py-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                        {p.objetivos && <Detail label="Objetivos" value={p.objetivos} span={3} />}
-                        {p.contenidos && <Detail label="Contenidos / Técnicas" value={p.contenidos} span={3} />}
-                        {p.sintomas && <TagDetail label="Síntomas / Pain Points" value={p.sintomas} span={3} />}
-                        {p.momento_journey && <TagDetail label="Momento Journey" value={p.momento_journey} />}
-                        {p.mind_state_paciente && <TagDetail label="Mind State" value={p.mind_state_paciente} />}
-                        {p.perfil_paciente && <TagDetail label="Perfil Paciente Diana" value={p.perfil_paciente} span={2} />}
-                        {p.recursos && <TagDetail label="Recursos" value={p.recursos} span={2} />}
-                        {p.frecuencia && <Detail label="Frecuencia" value={p.frecuencia} />}
-                        {p.duracion && <Detail label="Duración" value={p.duracion} />}
-                        {p.canal_captacion && <TagDetail label="Canal Captación" value={p.canal_captacion} />}
-                        {p.productos_asociados && <TagDetail label="Productos Asociados" value={p.productos_asociados} />}
-                        {p.paquetes_relacionados && <TagDetail label="Paquetes Relacionados" value={p.paquetes_relacionados} />}
+                      <div className="max-h-80 overflow-y-auto pr-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                          {/* Identity & Structure */}
+                          <Detail label="Código" value={p.code} />
+                          <Detail label="Tipo / Área" value={`${p.tipo} – ${TYPE_LABELS[p.tipo] || p.tipo}`} />
+                          <Detail label="Nombre" value={p.nombre} />
+                          <Detail label="Descripción" value={p.descripcion || '—'} span={3} />
+
+                          {/* Intervention */}
+                          <Detail label="Tipo Intervención" value={p.tipo_intervencion || '—'} />
+                          <Detail label="Modalidad Producto" value={p.modalidad || '—'} />
+                          <Detail label="Frecuencia Sesiones" value={p.frecuencia || '—'} />
+
+                          {/* Sessions & Duration */}
+                          <Detail label="Nº Sesiones" value={p.sesiones != null ? String(p.sesiones) : '—'} />
+                          <Detail label="Duración" value={p.duracion || '—'} />
+                          <Detail label="Duración (semanas)" value={p.duracion_semanas != null ? String(p.duracion_semanas) : '—'} />
+
+                          {/* Pricing */}
+                          <Detail label="Precio/Sesión" value={p.precio_sesion != null ? `€${Number(p.precio_sesion).toFixed(2)}` : '—'} />
+                          <Detail label="Coste/Sesión" value={p.coste_sesion != null ? `€${Number(p.coste_sesion).toFixed(2)}` : '—'} />
+                          {(() => {
+                            const m = (p.precio_sesion ?? 0) - (p.coste_sesion ?? 0)
+                            const pct = p.precio_sesion ? ((m / p.precio_sesion) * 100).toFixed(0) : null
+                            return <Detail label="Margen" value={p.precio_sesion != null ? `€${m.toFixed(2)} (${pct}%)` : '—'} />
+                          })()}
+
+                          {/* Clinical */}
+                          <Detail label="Objetivos Principales" value={p.objetivos || '—'} span={3} />
+                          <Detail label="Contenidos / Técnicas" value={p.contenidos || '—'} span={3} />
+                          <Detail label="Indicadores de Resultado" value={p.indicadores_resultado || '—'} span={3} />
+
+                          {/* Tags */}
+                          <TagDetail label="Síntomas / Pain Points" value={p.sintomas || ''} span={3} />
+                          <TagDetail label="Momento del Journey" value={p.momento_journey || ''} />
+                          <TagDetail label="Mind State Paciente" value={p.mind_state_paciente || ''} />
+                          <TagDetail label="Perfil Paciente Diana" value={p.perfil_paciente || ''} span={2} />
+                          <TagDetail label="Recursos Necesarios" value={p.recursos || ''} span={2} />
+                          <TagDetail label="Canal Captación" value={p.canal_captacion || ''} />
+                          <TagDetail label="Productos Asociados" value={p.productos_asociados || ''} />
+                          <TagDetail label="Paquetes Relacionados" value={p.paquetes_relacionados || ''} span={2} />
+                        </div>
                       </div>
                     </td>
                   </tr>

@@ -53,6 +53,12 @@ function ViewRouter() {
       return <BundleManager />
     case 'calendar':
       return <CalendarView />
+    case 'staff-calendar':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <StaffCalendar />
+        </RoleGuard>
+      )
     case 'config-programs':
       return <ConfigPrograms />
     case 'config-bundles':

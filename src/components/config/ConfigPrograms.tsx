@@ -336,9 +336,9 @@ export function ConfigPrograms() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
                           <button onClick={(e) => { e.stopPropagation(); setExpandedId(isExpanded ? null : p.id) }}
-                            className="flex items-center gap-1 text-xs text-teal-600 border border-teal-200 px-2.5 py-1 rounded-lg hover:bg-teal-50 transition-colors">
+                            className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs text-slate-500 border border-slate-200 px-2 py-1 rounded-lg hover:bg-white transition-opacity">
                             <ChevronDown size={12} className="transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-                            {isExpanded ? 'Menos' : 'Ver más'}
+                            {isExpanded ? 'Menos' : 'Más'}
                           </button>
                           <button onClick={(e) => { e.stopPropagation(); startEdit(p) }}
                             className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-white transition-opacity">

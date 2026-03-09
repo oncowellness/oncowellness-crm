@@ -127,7 +127,7 @@ export function MainDashboard() {
               </button>
             ))}
             {upcomingSessions.length === 0 && (
-              <p className="text-xs text-slate-400 text-center py-4">Sin citas próximas</p>
+              <EmptyState icon={Calendar} title="Sin citas próximas" description="Aún no hay sesiones programadas. Usa el Calendario para crear la primera cita." className="py-8" />
             )}
           </div>
         </div>

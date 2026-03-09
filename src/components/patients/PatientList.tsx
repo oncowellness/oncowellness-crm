@@ -193,8 +193,22 @@ export function PatientList() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-10 text-slate-400 text-sm">
-                  No se encontraron pacientes con los filtros aplicados
+                <td colSpan={7}>
+                  {patients.length === 0 ? (
+                    <EmptyState
+                      icon={Users}
+                      title="Sin pacientes registrados"
+                      description="Comienza registrando tu primer paciente para gestionar su journey oncológico completo."
+                      action={{ label: '+ Añadir Paciente', onClick: () => setShowNewModal(true) }}
+                    />
+                  ) : (
+                    <EmptyState
+                      icon={Search}
+                      title="Sin resultados"
+                      description="No se encontraron pacientes con los filtros aplicados. Prueba ajustando los criterios de búsqueda."
+                      className="py-10"
+                    />
+                  )}
                 </td>
               </tr>
             )}

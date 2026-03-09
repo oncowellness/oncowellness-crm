@@ -7,9 +7,12 @@ import { useClinicalTests } from '@/hooks/useClinicalTests'
 import { useSessions } from '@/hooks/useSessions'
 import { useCrisisOrders, useAcknowledgeCrisis } from '@/hooks/useCrisisOrders'
 import { useClinicalNotes } from '@/hooks/useClinicalNotes'
+import { useLogPhaseTransition } from '@/hooks/useClinicalEvents'
+import { useAuth } from '@/contexts/AuthContext'
 import { JourneyTimeline } from './JourneyTimeline'
 import { ClinicalReport } from '../reports/ClinicalReport'
 import { ClinicalTrends } from './ClinicalTrends'
+import { PhaseHistory } from './PhaseHistory'
 import { formatDate, cn } from '../../lib/utils'
 import { PHASE_LABELS, type AlertStatus, type Phase, type MindState } from '../../types'
 
@@ -37,6 +40,8 @@ export function PatientDetail() {
   const { data: clinicalNotes = [] } = useClinicalNotes(selectedPatientId)
   const updatePatient = useUpdatePatient()
   const acknowledgeCrisis = useAcknowledgeCrisis()
+  const logPhaseTransition = useLogPhaseTransition()
+  const { user, profile } = useAuth()
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<any>({})
@@ -82,6 +87,16 @@ export function PatientDetail() {
   }
 
   function saveEdit() {
+    // Log phase transition if phase changed
+    if (draft.fase_journey && draft.fase_journey !== patient!.fase_journey && user) {
+      logPhaseTransition.mutate({
+        patient_id: patient!.id,
+        previous_phase: patient!.fase_journey,
+        new_phase: draft.fase_journey,
+        performed_by: user.id,
+        performed_by_name: profile?.nombre ?? user.email ?? 'Unknown',
+      })
+    }
     updatePatient.mutate({ id: patient!.id, ...draft })
     setEditing(false)
   }
@@ -222,8 +237,9 @@ export function PatientDetail() {
         )}
       </div>
 
-      {/* Journey timeline */}
+      {/* Journey timeline + Phase History */}
       <JourneyTimeline currentPhase={patient.fase_journey as Phase} mindState={patient.mind_state ?? 'Activo'} />
+      <PhaseHistory patientId={patient.id} />
 
       {/* Key metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

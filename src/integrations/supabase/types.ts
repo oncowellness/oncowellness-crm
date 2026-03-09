@@ -140,6 +140,53 @@ export type Database = {
         }
         Relationships: []
       }
+      clinical_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          new_phase: Database["public"]["Enums"]["phase_journey"] | null
+          patient_id: string
+          performed_by: string | null
+          performed_by_name: string | null
+          previous_phase: Database["public"]["Enums"]["phase_journey"] | null
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          new_phase?: Database["public"]["Enums"]["phase_journey"] | null
+          patient_id: string
+          performed_by?: string | null
+          performed_by_name?: string | null
+          previous_phase?: Database["public"]["Enums"]["phase_journey"] | null
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          new_phase?: Database["public"]["Enums"]["phase_journey"] | null
+          patient_id?: string
+          performed_by?: string | null
+          performed_by_name?: string | null
+          previous_phase?: Database["public"]["Enums"]["phase_journey"] | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinical_notes: {
         Row: {
           author_id: string | null

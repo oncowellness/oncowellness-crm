@@ -262,6 +262,8 @@ export type Database = {
           notas: string | null
           patient_id: string
           program: string | null
+          resolved_at: string | null
+          resolved_by: string | null
           status: string | null
           trigger_reason: string
         }
@@ -271,6 +273,8 @@ export type Database = {
           notas?: string | null
           patient_id: string
           program?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           status?: string | null
           trigger_reason: string
         }
@@ -280,6 +284,8 @@ export type Database = {
           notas?: string | null
           patient_id?: string
           program?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           status?: string | null
           trigger_reason?: string
         }
@@ -456,6 +462,7 @@ export type Database = {
       }
       patients: {
         Row: {
+          active_status: boolean
           alert_status: Database["public"]["Enums"]["alert_status_enum"] | null
           assigned_bundles: string[] | null
           assigned_programs: string[] | null
@@ -479,6 +486,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_status?: boolean
           alert_status?: Database["public"]["Enums"]["alert_status_enum"] | null
           assigned_bundles?: string[] | null
           assigned_programs?: string[] | null
@@ -502,6 +510,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_status?: boolean
           alert_status?: Database["public"]["Enums"]["alert_status_enum"] | null
           assigned_bundles?: string[] | null
           assigned_programs?: string[] | null
@@ -603,6 +612,7 @@ export type Database = {
       }
       sessions: {
         Row: {
+          completed_at: string | null
           created_at: string
           fecha: string
           id: string
@@ -616,6 +626,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
           fecha: string
           id?: string
@@ -629,6 +640,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
           fecha?: string
           id?: string

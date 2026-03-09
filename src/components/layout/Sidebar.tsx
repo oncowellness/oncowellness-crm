@@ -22,12 +22,16 @@ const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?
   { label: 'Actividad', icon: <Clock size={18} />, view: 'activity' },
   { label: 'Analítica', icon: <BarChart2 size={18} />, view: 'analytics', adminOnly: true },
   { label: 'Outcomes', icon: <TrendingUp size={18} />, view: 'outcomes', adminOnly: true },
-  { label: 'Invitaciones', icon: <UserPlus size={18} />, view: 'invitations', adminOnly: true },
-  { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives', adminOnly: true },
   { label: 'Finanzas', icon: <Landmark size={18} />, view: 'financial', adminOnly: true },
   { label: 'Gestión Personal', icon: <Shield size={18} />, view: 'staff-management', directorOnly: true },
   { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
   { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs', adminOnly: true },
+]
+
+const STAFF_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
+  { label: 'Equipo', icon: <Shield size={16} />, view: 'staff-management' },
+  { label: 'Invitaciones', icon: <UserPlus size={16} />, view: 'invitations' },
+  { label: 'Liquidación', icon: <Coins size={16} />, view: 'incentives' },
 ]
 
 const CONFIG_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
@@ -57,8 +61,9 @@ export function Sidebar() {
   const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente').length
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
-  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'staff-calendar', 'patients', 'config-programs', 'config-bundles', 'config-content', 'incentives', 'analytics', 'financial'].includes(view)
+  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'staff-calendar', 'patients', 'config-programs', 'config-bundles', 'config-content', 'incentives', 'invitations', 'staff-management', 'analytics', 'financial'].includes(view)
   const inConfig = view === 'config-programs' || view === 'config-bundles' || view === 'config-content'
+  const inStaff = view === 'staff-management' || view === 'invitations' || view === 'incentives'
 
   return (
     <aside className="w-64 min-h-screen bg-slate-900 text-white flex flex-col">
@@ -111,9 +116,18 @@ export function Sidebar() {
           return true
         }).map(item => (
           <div key={item.view}>
-            <button onClick={() => setView(item.view)} className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', inConfig && item.view === 'config-programs' ? 'bg-teal-600 text-white' : view === item.view ? 'bg-teal-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white')}>
+            <button onClick={() => setView(item.view)} className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', (inConfig && item.view === 'config-programs') || (inStaff && item.view === 'staff-management') ? 'bg-teal-600 text-white' : view === item.view ? 'bg-teal-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white')}>
               {item.icon}{item.label}
             </button>
+            {item.view === 'staff-management' && inStaff && (
+              <div className="mt-0.5 space-y-0.5">
+                {STAFF_NAV.map(sub => (
+                  <button key={sub.view} onClick={() => setView(sub.view)} className={cn('w-full flex items-center gap-3 pl-6 pr-3 py-2 rounded-lg text-sm font-medium transition-colors', view === sub.view ? 'bg-teal-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white')}>
+                    {sub.icon}{sub.label}
+                  </button>
+                ))}
+              </div>
+            )}
             {item.view === 'config-programs' && inConfig && (
               <div className="mt-0.5 space-y-0.5">
                 {CONFIG_NAV.map(sub => (

@@ -171,12 +171,12 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
         <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
           {step === 1 && (
             <>
-              <Field label="Nombre completo" required>
-                <input autoFocus type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ej. Ana Martínez López" className={inputCls} />
+              <Field label="Nombre completo" required error={validations.name}>
+                <input autoFocus type="text" value={name} onChange={e => setName(e.target.value)} onBlur={() => markTouched('name')} placeholder="Ej. Ana Martínez López" className={validations.name ? inputErrorCls : inputCls} maxLength={100} />
               </Field>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Edad" required>
-                  <input type="number" min="1" max="120" value={age} onChange={e => setAge(e.target.value)} placeholder="Ej. 54" className={inputCls} />
+                <Field label="Edad" required error={validations.age}>
+                  <input type="number" min="1" max="120" value={age} onChange={e => setAge(e.target.value)} onBlur={() => markTouched('age')} placeholder="Ej. 54" className={validations.age ? inputErrorCls : inputCls} />
                 </Field>
                 <Field label="Sexo">
                   <div className="flex gap-2 mt-0.5">
@@ -186,23 +186,23 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
                   </div>
                 </Field>
               </div>
-              <Field label="Email"><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="paciente@email.com" className={inputCls} /></Field>
-              <Field label="Teléfono"><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="612 345 678" className={inputCls} /></Field>
+              <Field label="Email" error={validations.email}><input type="email" value={email} onChange={e => setEmail(e.target.value)} onBlur={() => markTouched('email')} placeholder="paciente@email.com" className={validations.email ? inputErrorCls : inputCls} maxLength={255} /></Field>
+              <Field label="Teléfono"><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="612 345 678" className={inputCls} maxLength={20} /></Field>
             </>
           )}
           {step === 2 && (
             <>
-              <Field label="Diagnóstico" required><input autoFocus type="text" value={diagnosis} onChange={e => setDiagnosis(e.target.value)} placeholder="Ej. Carcinoma ductal invasivo" className={inputCls} /></Field>
+              <Field label="Diagnóstico" required error={validations.diagnosis}><input autoFocus type="text" value={diagnosis} onChange={e => setDiagnosis(e.target.value)} onBlur={() => markTouched('diagnosis')} placeholder="Ej. Carcinoma ductal invasivo" className={validations.diagnosis ? inputErrorCls : inputCls} maxLength={200} /></Field>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Tipo de cáncer" required>
-                  <select value={cancerType} onChange={e => setCancerType(e.target.value)} className={inputCls}>
+                <Field label="Tipo de cáncer" required error={validations.cancerType}>
+                  <select value={cancerType} onChange={e => { setCancerType(e.target.value); markTouched('cancerType') }} className={validations.cancerType ? inputErrorCls : inputCls}>
                     <option value="">— Seleccionar —</option>
                     {CANCER_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </Field>
-                <Field label="Estadio TNM"><input type="text" value={stage} onChange={e => setStage(e.target.value)} placeholder="Ej. IIB, IIIA" className={inputCls} /></Field>
+                <Field label="Estadio TNM"><input type="text" value={stage} onChange={e => setStage(e.target.value)} placeholder="Ej. IIB, IIIA" className={inputCls} maxLength={20} /></Field>
               </div>
-              <Field label="Oncólogo/a responsable" required><input type="text" value={oncologist} onChange={e => setOncologist(e.target.value)} placeholder="Ej. Dr. García Pérez" className={inputCls} /></Field>
+              <Field label="Oncólogo/a responsable" required error={validations.oncologist}><input type="text" value={oncologist} onChange={e => setOncologist(e.target.value)} onBlur={() => markTouched('oncologist')} placeholder="Ej. Dr. García Pérez" className={validations.oncologist ? inputErrorCls : inputCls} maxLength={100} /></Field>
               <Field label="Fecha de diagnóstico"><input type="date" value={diagnosisDate} onChange={e => setDiagnosisDate(e.target.value)} className={inputCls} /></Field>
             </>
           )}

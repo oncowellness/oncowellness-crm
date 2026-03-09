@@ -1,6 +1,15 @@
-import { Bell, Search, ChevronRight } from 'lucide-react'
+import { Bell, Search, ChevronRight, LogOut } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import { useAuth } from '@/contexts/AuthContext'
 import { PHASE_LABELS } from '../../types'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const VIEW_TITLES: Record<string, string> = {
   dashboard: 'Panel Principal',
@@ -12,15 +21,35 @@ const VIEW_TITLES: Record<string, string> = {
   'clinical-dashboard': 'Dashboard Clínico',
   calendar: 'Calendario de Citas',
   bundles: 'Gestor de Bundles',
+  incentives: 'Liquidación de Incentivos',
+  'config-programs': 'Configuración de Programas',
+  'config-bundles': 'Configuración de Packs',
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrador',
+  director: 'Director',
+  fisioterapeuta: 'Fisioterapeuta',
+  psicologo: 'Psicólogo',
+  psiconcologo: 'Psico-oncólogo',
+  nutricionista: 'Nutricionista',
+  entrenador: 'Entrenador',
 }
 
 export function Header() {
   const { view, patients, selectedPatientId, setView, selectPatient } = useStore()
+  const { profile, roles, signOut } = useAuth()
 
   const patient = selectedPatientId ? patients.find(p => p.id === selectedPatientId) : null
   const pendingAlerts = patients.reduce((acc, p) =>
     acc + p.crisisOrders.filter(c => c.status === 'pendiente').length, 0
   )
+
+  const initials = profile?.nombre
+    ? profile.nombre.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+    : 'OW'
+
+  const primaryRole = roles.length > 0 ? ROLE_LABELS[roles[0]] ?? roles[0] : 'Sin rol'
 
   return (
     <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-10">
@@ -65,9 +94,32 @@ export function Header() {
             </span>
           )}
         </button>
-        <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-          OW
-        </div>
+
+        {/* User menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2 px-2 h-9">
+              <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                {initials}
+              </div>
+              <div className="text-left hidden md:block">
+                <p className="text-xs font-medium text-slate-800 leading-tight">{profile?.nombre ?? 'Usuario'}</p>
+                <p className="text-[10px] text-slate-400 leading-tight">{primaryRole}</p>
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <div className="px-2 py-1.5">
+              <p className="text-sm font-medium">{profile?.nombre}</p>
+              <p className="text-xs text-muted-foreground">{profile?.email}</p>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={signOut} className="text-red-600 cursor-pointer">
+              <LogOut size={14} className="mr-2" />
+              Cerrar sesión
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   )

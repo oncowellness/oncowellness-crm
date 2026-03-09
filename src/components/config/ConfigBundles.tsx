@@ -11,9 +11,11 @@ const PHASE_COLORS: Record<Phase, string> = {
   F4: 'bg-red-100 text-red-700', F5: 'bg-purple-100 text-purple-700', F6: 'bg-green-100 text-green-700',
   F7: 'bg-teal-100 text-teal-700', F8: 'bg-slate-100 text-slate-600',
 }
-const TYPE_COLORS: Record<ProgramType, string> = {
+const TYPE_COLORS: Record<string, string> = {
   FX: 'bg-blue-100 text-blue-700', PS: 'bg-purple-100 text-purple-700', NU: 'bg-green-100 text-green-700',
   EO: 'bg-pink-100 text-pink-700', TS: 'bg-orange-100 text-orange-700',
+  TO: 'bg-amber-100 text-amber-700', SX: 'bg-rose-100 text-rose-700', PA: 'bg-red-100 text-red-700',
+  ED: 'bg-cyan-100 text-cyan-700', PI: 'bg-indigo-100 text-indigo-700',
 }
 const iCls = 'w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400'
 

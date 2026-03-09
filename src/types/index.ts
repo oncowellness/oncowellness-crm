@@ -19,7 +19,7 @@ export type MindState = 'Activo' | 'Ansioso' | 'Depresivo' | 'Resiliente' | 'Vul
 export type AlertStatus = 'verde' | 'amarillo' | 'rojo'
 
 // ─── Program Types ────────────────────────────────────────────────────────────
-export type ProgramType = 'FX' | 'PS' | 'NU' | 'EO' | 'TS'
+export type ProgramType = 'FX' | 'PS' | 'NU' | 'EO' | 'TS' | 'TO' | 'SX' | 'PA' | 'ED' | 'PI'
 
 export interface Program {
   code: string        // e.g. FX-01

@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
-import { BookOpen, Send, CheckCircle, MessageSquare, FileText, Video, Package } from 'lucide-react'
+import { BookOpen, Send, CheckCircle, MessageSquare, FileText, Video, Package, Clock } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatient } from '@/hooks/usePatients'
 import { useContentItems } from '@/hooks/useContentItems'
+import { usePatientContent, useSendContent } from '@/hooks/usePatientContent'
 import { cn } from '../../lib/utils'
 import { PHASE_LABELS, type Phase } from '../../types'
+import { toast } from 'sonner'
+import { format } from 'date-fns'
 
 // Phase-based content rules (configuration logic)
 const PHASE_CONTENT_RULES: Record<string, string[]> = {
@@ -41,14 +44,8 @@ export function EmpowermentModule() {
   const { selectedPatientId } = useStore()
   const { data: patient } = usePatient(selectedPatientId)
   const { data: contentItems = [] } = useContentItems()
-  const [sentNotification, setSentNotification] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (sentNotification) {
-      const timer = setTimeout(() => setSentNotification(null), 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [sentNotification])
+  const { data: patientContent = [] } = usePatientContent(selectedPatientId ?? undefined)
+  const sendContent = useSendContent()
 
   if (!patient) return <div className="p-6 text-muted-foreground">Selecciona un paciente</div>
 
@@ -56,14 +53,27 @@ export function EmpowermentModule() {
   const recommendedCodes = PHASE_CONTENT_RULES[currentPhase] ?? []
   const recommendedItems = contentItems.filter(c => recommendedCodes.includes(c.code))
 
+  // Build a set of already-sent content_item IDs for quick lookup
+  const sentContentIds = new Set(patientContent.map((pc: any) => pc.content_id))
+  const sentContentByItemId = new Map(patientContent.map((pc: any) => [pc.content_id, pc]))
+
   const reminderTemplate = REMINDER_TEMPLATES[patient.mind_state ?? 'Activo'] ?? REMINDER_TEMPLATES['Activo']
   const reminderText = reminderTemplate
     .replace('{nombre}', patient.nombre.split(' ')[0])
     .replace('{fecha}', 'próxima cita')
 
-  function handleSend(code: string) {
-    // TODO: implement patient_content insert via Supabase
-    setSentNotification(code)
+  function handleSend(contentItemId: string, code: string) {
+    if (sentContentIds.has(contentItemId)) {
+      toast.info('Este contenido ya fue enviado a este paciente')
+      return
+    }
+    sendContent.mutate(
+      { patientId: patient!.id, contentId: contentItemId },
+      {
+        onSuccess: () => toast.success(`Contenido ${code} enviado correctamente`),
+        onError: () => toast.error('Error al enviar contenido'),
+      }
+    )
   }
 
   return (
@@ -74,26 +84,24 @@ export function EmpowermentModule() {
           <h2 className="text-base font-bold text-foreground">Motor de Empoderamiento</h2>
           <p className="text-xs text-muted-foreground">Paciente: {patient.nombre} · Fase {currentPhase} – {PHASE_LABELS[currentPhase]}</p>
         </div>
-      </div>
-
-      {sentNotification && (
-        <div className="bg-green-50 border border-green-300 rounded-xl p-3 flex items-center gap-2">
-          <CheckCircle size={16} className="text-green-600" />
-          <p className="text-sm text-green-700">Contenido enviado/habilitado correctamente</p>
+        <div className="ml-auto text-xs text-muted-foreground">
+          {patientContent.length} contenidos entregados
         </div>
-      )}
+      </div>
 
       <div className="bg-card rounded-xl border p-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-2 h-2 bg-teal-500 rounded-full" />
-          <h3 className="text-sm font-semibold text-foreground">Reglas de Contenido para {currentPhase} – {PHASE_LABELS[currentPhase]}</h3>
+          <h3 className="text-sm font-semibold text-foreground">Recomendados para {currentPhase} – {PHASE_LABELS[currentPhase]}</h3>
         </div>
         <div className="space-y-3">
           {recommendedItems.map(item => {
             const tipo = (item.tipo ?? 'manual') as ContentType
             const typeConfig = CONTENT_TYPE_CONFIG[tipo] ?? CONTENT_TYPE_CONFIG.manual
+            const isSent = sentContentIds.has(item.id)
+            const sentRecord = sentContentByItemId.get(item.id)
             return (
-              <div key={item.code} className="flex items-start justify-between gap-4 p-3 rounded-lg border bg-card">
+              <div key={item.code} className={cn('flex items-start justify-between gap-4 p-3 rounded-lg border bg-card', isSent && 'border-green-200 bg-green-50/50')}>
                 <div className="flex items-start gap-3">
                   <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0', typeConfig.bg)}>
                     <span className={typeConfig.color}>{typeConfig.icon}</span>
@@ -101,10 +109,24 @@ export function EmpowermentModule() {
                   <div>
                     <p className="text-sm font-semibold text-foreground"><span className="text-teal-600 mr-1">{item.code}</span>{item.title}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                    {isSent && sentRecord?.sent_date && (
+                      <p className="text-[11px] text-green-600 mt-1 flex items-center gap-1">
+                        <CheckCircle size={10} /> Enviado el {format(new Date(sentRecord.sent_date), 'dd/MM/yyyy')}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <button onClick={() => handleSend(item.code)} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg shrink-0 bg-teal-600 text-white hover:bg-teal-700">
-                  <Send size={12} /> Enviar
+                <button
+                  onClick={() => handleSend(item.id, item.code)}
+                  disabled={isSent || sendContent.isPending}
+                  className={cn(
+                    'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg shrink-0',
+                    isSent
+                      ? 'bg-green-100 text-green-600 cursor-default'
+                      : 'bg-teal-600 text-white hover:bg-teal-700'
+                  )}
+                >
+                  {isSent ? <><CheckCircle size={12} /> Enviado</> : <><Send size={12} /> Enviar</>}
                 </button>
               </div>
             )
@@ -131,16 +153,35 @@ export function EmpowermentModule() {
             const tipo = (item.tipo ?? 'manual') as ContentType
             const typeConfig = CONTENT_TYPE_CONFIG[tipo] ?? CONTENT_TYPE_CONFIG.manual
             const isRecommended = recommendedCodes.includes(item.code)
+            const isSent = sentContentIds.has(item.id)
+            const sentRecord = sentContentByItemId.get(item.id)
             return (
-              <div key={item.code} className={cn('flex items-start justify-between gap-3 p-3 rounded-lg border', isRecommended ? 'border-teal-200 bg-teal-50' : '')}>
+              <div key={item.code} className={cn('flex items-start justify-between gap-3 p-3 rounded-lg border', isRecommended ? 'border-teal-200 bg-teal-50' : '', isSent && !isRecommended ? 'border-green-200 bg-green-50/50' : '')}>
                 <div className="flex items-start gap-2">
                   <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center shrink-0', typeConfig.bg)}><span className={typeConfig.color}>{typeConfig.icon}</span></div>
                   <div>
                     <p className="text-xs font-semibold text-foreground"><span className="text-teal-600 mr-1">{item.code}</span>{item.title}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Fases: {(item.phases ?? []).join(', ')}{isRecommended && <span className="ml-2 text-teal-600">★ Recomendado</span>}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Fases: {(item.phases ?? []).join(', ')}
+                      {isRecommended && <span className="ml-2 text-teal-600">★ Recomendado</span>}
+                      {isSent && sentRecord?.sent_date && (
+                        <span className="ml-2 text-green-600">✓ {format(new Date(sentRecord.sent_date), 'dd/MM/yy')}</span>
+                      )}
+                    </p>
                   </div>
                 </div>
-                <button onClick={() => handleSend(item.code)} className="shrink-0 text-[11px] px-2 py-1 rounded-lg bg-muted text-muted-foreground hover:bg-teal-50 hover:text-teal-600">Enviar</button>
+                <button
+                  onClick={() => handleSend(item.id, item.code)}
+                  disabled={isSent || sendContent.isPending}
+                  className={cn(
+                    'shrink-0 text-[11px] px-2 py-1 rounded-lg',
+                    isSent
+                      ? 'bg-green-100 text-green-600 cursor-default'
+                      : 'bg-muted text-muted-foreground hover:bg-teal-50 hover:text-teal-600'
+                  )}
+                >
+                  {isSent ? '✓' : 'Enviar'}
+                </button>
               </div>
             )
           })}

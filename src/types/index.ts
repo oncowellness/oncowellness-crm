@@ -211,6 +211,7 @@ export type View =
   | 'config-programs'
   | 'config-bundles'
   | 'config-content'
+  | 'staff-calendar'
   | 'incentives'
   | 'security'
   | 'invitations'

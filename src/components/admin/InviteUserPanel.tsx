@@ -71,10 +71,41 @@ export function InviteUserPanel() {
         metadata: { invited_email: email, role },
       })
 
-      toast({
-        title: 'Invitación creada',
-        description: `Se generó el enlace de invitación para ${email}`,
-      })
+      // Try to send the invitation email automatically
+      try {
+        const { data: emailResult, error: emailError } = await supabase.functions.invoke(
+          'send-invitation-email',
+          {
+            body: {
+              email,
+              token: data.token,
+              role,
+              inviterName: user.email,
+            },
+          }
+        )
+
+        if (emailError) throw emailError
+
+        if (emailResult?.method === 'email_sent') {
+          toast({
+            title: 'Invitación enviada',
+            description: `Se envió un email de invitación a ${email}`,
+          })
+        } else {
+          toast({
+            title: 'Invitación creada',
+            description: emailResult?.message || `Comparte el enlace manualmente con ${email}`,
+          })
+        }
+      } catch (emailErr) {
+        // Email sending failed but invitation was created - show link to copy
+        console.warn('Email send failed, link available to copy:', emailErr)
+        toast({
+          title: 'Invitación creada (sin email)',
+          description: `No se pudo enviar el email. Copia el enlace y compártelo con ${email}`,
+        })
+      }
 
       setEmail('')
       queryClient.invalidateQueries({ queryKey: ['invitations'] })

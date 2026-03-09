@@ -12,6 +12,9 @@ import { CalendarView } from '@/components/calendar/CalendarView'
 import { ConfigPrograms } from '@/components/config/ConfigPrograms'
 import { ConfigBundles } from '@/components/config/ConfigBundles'
 import IncentivesPanel from '@/components/incentives/IncentivesPanel'
+import LoginPage from '@/components/auth/LoginPage'
+import { RoleGuard } from '@/components/auth/RoleGuard'
+import { useAuth } from '@/contexts/AuthContext'
 import { useStore } from '@/store/useStore'
 
 function ViewRouter() {
@@ -41,13 +44,34 @@ function ViewRouter() {
     case 'config-bundles':
       return <ConfigBundles />
     case 'incentives':
-      return <IncentivesPanel />
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <IncentivesPanel />
+        </RoleGuard>
+      )
     default:
       return <MainDashboard />
   }
 }
 
 const Index = () => {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <LoginPage />
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />

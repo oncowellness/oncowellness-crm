@@ -213,3 +213,4 @@ export type View =
   | 'incentives'
   | 'security'
   | 'invitations'
+  | 'staff-management'

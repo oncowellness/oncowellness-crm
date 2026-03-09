@@ -27,12 +27,13 @@ const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Pacientes', icon: <Users size={18} />, view: 'patients' },
 ]
 
-const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?: boolean }[] = [
+const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?: boolean; directorOnly?: boolean }[] = [
   { label: 'Calendario', icon: <CalendarDays size={18} />, view: 'calendar' },
   { label: 'Invitaciones', icon: <UserPlus size={18} />, view: 'invitations', adminOnly: true },
   { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives', adminOnly: true },
+  { label: 'Gestión Personal', icon: <Shield size={18} />, view: 'staff-management', directorOnly: true },
   { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
-  { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs' },
+  { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs', adminOnly: true },
 ]
 
 const CONFIG_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
@@ -88,7 +89,8 @@ function PatientSidebarMenu({ patient, currentView, onNavigate }: PatientMenuPro
 
 export function Sidebar() {
   const { view, setView, patients, selectedPatientId } = useStore()
-  const { isAdmin, profile, signOut } = useAuth()
+  const { isAdmin, profile, roles, hasRole, signOut } = useAuth()
+  const isDirector = hasRole('director')
 
   const redAlerts = patients.filter(p => p.alertStatus === 'rojo').length
   const pendingCrisis = patients.reduce((acc, p) =>
@@ -155,7 +157,11 @@ export function Sidebar() {
         )}
 
         {BOTTOM_NAV
-          .filter(item => !item.adminOnly || isAdmin)
+          .filter(item => {
+            if (item.directorOnly && !isDirector) return false
+            if (item.adminOnly && !isAdmin) return false
+            return true
+          })
           .map(item => (
           <div key={item.view}>
             <button
@@ -212,6 +218,11 @@ export function Sidebar() {
             <div className="min-w-0">
               <p className="text-xs font-medium text-slate-200 truncate">{profile.nombre}</p>
               <p className="text-[10px] text-slate-500 truncate">{profile.email}</p>
+              {roles.length > 0 && (
+                <p className="text-[10px] text-teal-400 font-medium capitalize mt-0.5">
+                  {roles[0] === 'admin' ? 'Administrador' : roles[0] === 'director' ? 'Director' : roles[0] === 'fisioterapeuta' ? 'Fisioterapeuta' : roles[0] === 'psiconcologo' ? 'Psico-oncólogo' : roles[0] === 'nutricionista' ? 'Nutricionista' : roles[0] === 'entrenador' ? 'Entrenador' : roles[0]}
+                </p>
+              )}
             </div>
           </div>
         )}

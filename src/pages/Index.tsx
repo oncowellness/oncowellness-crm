@@ -17,6 +17,7 @@ import EmergencyLockPage from '@/pages/EmergencyLockPage'
 import { RoleGuard } from '@/components/auth/RoleGuard'
 import { InviteUserPanel } from '@/components/admin/InviteUserPanel'
 import { SecurityDashboard } from '@/components/security/SecurityDashboard'
+import { StaffManagement } from '@/components/admin/StaffManagement'
 import { useAuth } from '@/contexts/AuthContext'
 import { useStore } from '@/store/useStore'
 import { useInactivityLogout } from '@/hooks/useInactivityLogout'
@@ -60,6 +61,12 @@ function ViewRouter() {
       return (
         <RoleGuard allowedRoles={['admin', 'director']}>
           <InviteUserPanel />
+        </RoleGuard>
+      )
+    case 'staff-management':
+      return (
+        <RoleGuard allowedRoles={['director']}>
+          <StaffManagement />
         </RoleGuard>
       )
     default:

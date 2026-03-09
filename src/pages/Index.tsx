@@ -86,6 +86,11 @@ function ViewRouter() {
           <AnalyticsDashboard />
         </RoleGuard>
       )
+    case 'outcomes':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <OutcomesDashboard />
+        </RoleGuard>
     case 'invitations':
       return (
         <RoleGuard allowedRoles={['admin', 'director']}>

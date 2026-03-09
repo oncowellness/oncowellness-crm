@@ -14,6 +14,7 @@ import { ConfigBundles } from '@/components/config/ConfigBundles'
 import { ActivityFeed } from '@/components/activity/ActivityFeed'
 import { AnalyticsDashboard } from '@/components/dashboard/AnalyticsDashboard'
 import IncentivesPanel from '@/components/incentives/IncentivesPanel'
+import { FinancialDashboard } from '@/components/financial/FinancialDashboard'
 import LoginPage from '@/components/auth/LoginPage'
 import EmergencyLockPage from '@/pages/EmergencyLockPage'
 import { RoleGuard } from '@/components/auth/RoleGuard'
@@ -80,6 +81,12 @@ function ViewRouter() {
       return (
         <RoleGuard allowedRoles={['director']}>
           <StaffManagement />
+        </RoleGuard>
+      )
+    case 'financial':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <FinancialDashboard />
         </RoleGuard>
       )
     default:

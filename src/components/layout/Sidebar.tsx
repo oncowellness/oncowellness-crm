@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, Activity, Brain, BookOpen, BarChart2, Package,
-  Heart, CalendarDays, ChevronRight, Settings, Layers, Coins, Shield, UserPlus, Clock,
+  Heart, CalendarDays, ChevronRight, Settings, Layers, Coins, Shield, UserPlus, Clock, Landmark,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatients } from '@/hooks/usePatients'
@@ -22,6 +22,7 @@ const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?
   { label: 'Analítica', icon: <BarChart2 size={18} />, view: 'analytics', adminOnly: true },
   { label: 'Invitaciones', icon: <UserPlus size={18} />, view: 'invitations', adminOnly: true },
   { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives', adminOnly: true },
+  { label: 'Finanzas', icon: <Landmark size={18} />, view: 'financial', adminOnly: true },
   { label: 'Gestión Personal', icon: <Shield size={18} />, view: 'staff-management', directorOnly: true },
   { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
   { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs', adminOnly: true },
@@ -52,7 +53,7 @@ export function Sidebar() {
   const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente').length
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
-  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles', 'incentives', 'analytics'].includes(view)
+  const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles', 'incentives', 'analytics', 'financial'].includes(view)
   const inConfig = view === 'config-programs' || view === 'config-bundles'
 
   return (

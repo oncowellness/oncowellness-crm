@@ -44,10 +44,12 @@ function Field({
 }
 
 const inputCls = 'w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400'
+const inputErrorCls = 'w-full text-sm border border-red-300 rounded-lg px-3 py-2 bg-red-50/30 focus:outline-none focus:ring-2 focus:ring-red-400'
 
 export function NewPatientModal({ onClose, onCreated }: Props) {
   const createPatient = useCreatePatient()
   const [step, setStep] = useState<Step>(1)
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const [name, setName] = useState('')
   const [age, setAge] = useState('')

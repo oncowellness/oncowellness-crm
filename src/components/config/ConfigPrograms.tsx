@@ -334,12 +334,14 @@ export function ConfigPrograms() {
                       <td className="px-4 py-3 text-xs text-slate-500 max-w-xs truncate">{p.descripcion || '—'}</td>
                       <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell max-w-xs truncate">{p.objetivos || '—'}</td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <span className="text-slate-400 transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                            <ChevronDown size={14} />
-                          </span>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={(e) => { e.stopPropagation(); setExpandedId(isExpanded ? null : p.id) }}
+                            className="flex items-center gap-1 text-xs text-teal-600 border border-teal-200 px-2.5 py-1 rounded-lg hover:bg-teal-50 transition-colors">
+                            <ChevronDown size={12} className="transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                            {isExpanded ? 'Menos' : 'Ver más'}
+                          </button>
                           <button onClick={(e) => { e.stopPropagation(); startEdit(p) }}
-                            className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs text-slate-500 border border-slate-200 px-2 py-1 rounded-lg hover:bg-white transition-opacity">
+                            className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-white transition-opacity">
                             <Pencil size={11} /> Editar
                           </button>
                         </div>

@@ -18,6 +18,7 @@ const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
 
 const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?: boolean; directorOnly?: boolean }[] = [
   { label: 'Calendario', icon: <CalendarDays size={18} />, view: 'calendar' },
+  { label: 'Actividad', icon: <Clock size={18} />, view: 'activity' },
   { label: 'Invitaciones', icon: <UserPlus size={18} />, view: 'invitations', adminOnly: true },
   { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives', adminOnly: true },
   { label: 'Gestión Personal', icon: <Shield size={18} />, view: 'staff-management', directorOnly: true },

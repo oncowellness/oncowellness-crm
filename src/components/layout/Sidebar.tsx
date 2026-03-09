@@ -27,6 +27,7 @@ const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
 const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Calendario', icon: <CalendarDays size={18} />, view: 'calendar' },
   { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives' },
+  { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
   { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs' },
 ]
 

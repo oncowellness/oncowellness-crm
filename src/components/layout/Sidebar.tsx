@@ -22,12 +22,16 @@ const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?
   { label: 'Actividad', icon: <Clock size={18} />, view: 'activity' },
   { label: 'Analítica', icon: <BarChart2 size={18} />, view: 'analytics', adminOnly: true },
   { label: 'Outcomes', icon: <TrendingUp size={18} />, view: 'outcomes', adminOnly: true },
-  { label: 'Invitaciones', icon: <UserPlus size={18} />, view: 'invitations', adminOnly: true },
-  { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives', adminOnly: true },
   { label: 'Finanzas', icon: <Landmark size={18} />, view: 'financial', adminOnly: true },
   { label: 'Gestión Personal', icon: <Shield size={18} />, view: 'staff-management', directorOnly: true },
   { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
   { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs', adminOnly: true },
+]
+
+const STAFF_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
+  { label: 'Equipo', icon: <Shield size={16} />, view: 'staff-management' },
+  { label: 'Invitaciones', icon: <UserPlus size={16} />, view: 'invitations' },
+  { label: 'Liquidación', icon: <Coins size={16} />, view: 'incentives' },
 ]
 
 const CONFIG_NAV: { label: string; icon: React.ReactNode; view: View }[] = [

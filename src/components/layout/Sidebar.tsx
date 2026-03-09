@@ -89,7 +89,8 @@ function PatientSidebarMenu({ patient, currentView, onNavigate }: PatientMenuPro
 
 export function Sidebar() {
   const { view, setView, patients, selectedPatientId } = useStore()
-  const { isAdmin, profile, signOut } = useAuth()
+  const { isAdmin, profile, roles, hasRole, signOut } = useAuth()
+  const isDirector = hasRole('director')
 
   const redAlerts = patients.filter(p => p.alertStatus === 'rojo').length
   const pendingCrisis = patients.reduce((acc, p) =>

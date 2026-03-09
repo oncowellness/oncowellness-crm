@@ -1,8 +1,18 @@
 import { useState } from 'react'
-import { Plus, Pencil, Check, X, Layers, ChevronDown, ChevronUp, Euro, DollarSign } from 'lucide-react'
+import { Plus, Pencil, Check, X, Layers, ChevronDown, ChevronUp } from 'lucide-react'
 import { usePrograms, useCreateProgram, useUpdateProgram, type ProgramRow, type ProgramInsert } from '@/hooks/usePrograms'
 import { cn } from '../../lib/utils'
 import type { ProgramType } from '../../types'
+import { MultiSelect } from '../ui/MultiSelect'
+import {
+  SINTOMAS_OPTIONS,
+  MOMENTO_JOURNEY_OPTIONS,
+  MIND_STATE_OPTIONS,
+  PERFIL_PACIENTE_OPTIONS,
+  RECURSOS_OPTIONS,
+  CANAL_CAPTACION_OPTIONS,
+  PRODUCTOS_ASOCIADOS_OPTIONS,
+} from './programTaxonomy'
 
 const ALL_TYPES: ProgramType[] = ['FX', 'PS', 'NU', 'EO', 'TS', 'TO', 'SX', 'PA', 'ED', 'PI']
 const TYPE_COLORS: Record<string, string> = {
@@ -21,7 +31,8 @@ const TYPE_LABELS: Record<string, string> = {
 const MODALIDAD_OPTIONS = [
   'Sesión individual suelta', 'Pack cerrado', 'Suscripción mensual',
   'Suscripción trimestral', 'Taller grupal', 'Programa gratuito / incluido',
-  'Visita domiciliaria', 'Suscripción digital',
+  'Visita domiciliaria', 'Suscripción digital', 'Pack intensivo + suscripción mantenimiento',
+  'Suscripción mensual integral', 'Pack trimestral', 'Servicio incluido',
 ]
 
 const INTERVENCION_OPTIONS = [
@@ -29,14 +40,25 @@ const INTERVENCION_OPTIONS = [
   'Individual, presencial/domicilio', 'Individual/grupal, presencial',
   'Individual/grupal, presencial + plan domiciliario',
   'Grupal, presencial', 'Grupal, presencial/online',
+  'Grupal/individual, presencial', 'Grupal/individual, presencial/online',
   'Pack multidisciplinar, presencial',
   'Pack multidisciplinar, presencial + domicilio',
   'Online, asincrónico + sincrónico',
+  'Individual/familiar, presencial',
 ]
 
 const iCls = 'w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400'
 const labelCls = 'text-xs text-slate-500 font-medium block mb-1'
 const selectCls = cn(iCls, 'appearance-none')
+
+// Helper: comma-separated string ↔ array
+function csvToArray(val: string | null): string[] {
+  if (!val) return []
+  return val.split(',').map(s => s.trim()).filter(Boolean)
+}
+function arrayToCsv(arr: string[]): string | null {
+  return arr.length ? arr.join(', ') : null
+}
 
 function emptyDraft(): Omit<ProgramInsert, 'tipo'> & { tipo: string } {
   return {
@@ -50,10 +72,11 @@ function emptyDraft(): Omit<ProgramInsert, 'tipo'> & { tipo: string } {
   }
 }
 
-function ProgramForm({ draft, onChange, isNew }: {
-  draft: any; onChange: (d: any) => void; isNew?: boolean
+function ProgramForm({ draft, onChange, isNew, programCodes }: {
+  draft: any; onChange: (d: any) => void; isNew?: boolean; programCodes?: string[]
 }) {
   const set = (k: string, v: any) => onChange({ ...draft, [k]: v })
+  const setMulti = (k: string, arr: string[]) => set(k, arrayToCsv(arr))
   const margen = (draft.precio_sesion ?? 0) - (draft.coste_sesion ?? 0)
   const margenPct = draft.precio_sesion ? ((margen / draft.precio_sesion) * 100).toFixed(0) : '—'
 
@@ -122,26 +145,87 @@ function ProgramForm({ draft, onChange, isNew }: {
         <textarea className={cn(iCls, 'h-16 resize-none')} value={draft.objetivos ?? ''} onChange={e => set('objetivos', e.target.value || null)} /></div>
       <div className="lg:col-span-3"><label className={labelCls}>Contenidos / Técnicas Clave</label>
         <textarea className={cn(iCls, 'h-16 resize-none')} value={draft.contenidos ?? ''} onChange={e => set('contenidos', e.target.value || null)} /></div>
-      <div><label className={labelCls}>Síntomas / Pain Points</label>
-        <input className={iCls} value={draft.sintomas ?? ''} onChange={e => set('sintomas', e.target.value || null)} /></div>
-      <div><label className={labelCls}>Momento del Journey</label>
-        <input className={iCls} value={draft.momento_journey ?? ''} onChange={e => set('momento_journey', e.target.value || null)} /></div>
-      <div><label className={labelCls}>Mind State Paciente</label>
-        <input className={iCls} value={draft.mind_state_paciente ?? ''} onChange={e => set('mind_state_paciente', e.target.value || null)} /></div>
 
-      {/* Target & Resources */}
-      <div className="lg:col-span-2"><label className={labelCls}>Perfil Paciente Diana</label>
-        <input className={iCls} value={draft.perfil_paciente ?? ''} onChange={e => set('perfil_paciente', e.target.value || null)} /></div>
-      <div><label className={labelCls}>Recursos Necesarios</label>
-        <input className={iCls} value={draft.recursos ?? ''} onChange={e => set('recursos', e.target.value || null)} /></div>
+      {/* ── MULTI-SELECT FIELDS ── */}
+      <div className="lg:col-span-3">
+        <label className={labelCls}>Síntomas / Pain Points</label>
+        <MultiSelect
+          options={SINTOMAS_OPTIONS}
+          value={csvToArray(draft.sintomas)}
+          onChange={arr => setMulti('sintomas', arr)}
+          placeholder="Seleccionar síntomas…"
+          maxDisplay={4}
+        />
+      </div>
 
-      {/* Cross-references */}
-      <div><label className={labelCls}>Canal Captación</label>
-        <input className={iCls} value={draft.canal_captacion ?? ''} onChange={e => set('canal_captacion', e.target.value || null)} /></div>
-      <div><label className={labelCls}>Productos Asociados</label>
-        <input className={iCls} value={draft.productos_asociados ?? ''} onChange={e => set('productos_asociados', e.target.value || null)} /></div>
-      <div><label className={labelCls}>Paquetes Relacionados</label>
-        <input className={iCls} value={draft.paquetes_relacionados ?? ''} onChange={e => set('paquetes_relacionados', e.target.value || null)} /></div>
+      <div>
+        <label className={labelCls}>Momento del Journey</label>
+        <MultiSelect
+          options={MOMENTO_JOURNEY_OPTIONS}
+          value={csvToArray(draft.momento_journey)}
+          onChange={arr => setMulti('momento_journey', arr)}
+          placeholder="Seleccionar momento(s)…"
+        />
+      </div>
+      <div>
+        <label className={labelCls}>Mind State Paciente</label>
+        <MultiSelect
+          options={MIND_STATE_OPTIONS}
+          value={csvToArray(draft.mind_state_paciente)}
+          onChange={arr => setMulti('mind_state_paciente', arr)}
+          placeholder="Seleccionar estados…"
+        />
+      </div>
+      <div>
+        <label className={labelCls}>Perfil Paciente Diana</label>
+        <MultiSelect
+          options={PERFIL_PACIENTE_OPTIONS}
+          value={csvToArray(draft.perfil_paciente)}
+          onChange={arr => setMulti('perfil_paciente', arr)}
+          placeholder="Seleccionar perfiles…"
+          maxDisplay={2}
+        />
+      </div>
+
+      <div className="lg:col-span-2">
+        <label className={labelCls}>Recursos Necesarios</label>
+        <MultiSelect
+          options={RECURSOS_OPTIONS}
+          value={csvToArray(draft.recursos)}
+          onChange={arr => setMulti('recursos', arr)}
+          placeholder="Seleccionar recursos…"
+          maxDisplay={3}
+        />
+      </div>
+      <div>
+        <label className={labelCls}>Canal Captación</label>
+        <MultiSelect
+          options={CANAL_CAPTACION_OPTIONS}
+          value={csvToArray(draft.canal_captacion)}
+          onChange={arr => setMulti('canal_captacion', arr)}
+          placeholder="Seleccionar canales…"
+        />
+      </div>
+
+      <div>
+        <label className={labelCls}>Productos Asociados</label>
+        <MultiSelect
+          options={PRODUCTOS_ASOCIADOS_OPTIONS}
+          value={csvToArray(draft.productos_asociados)}
+          onChange={arr => setMulti('productos_asociados', arr)}
+          placeholder="Seleccionar productos…"
+        />
+      </div>
+      <div className="lg:col-span-2">
+        <label className={labelCls}>Paquetes Relacionados</label>
+        <MultiSelect
+          options={programCodes ?? []}
+          value={csvToArray(draft.paquetes_relacionados)}
+          onChange={arr => setMulti('paquetes_relacionados', arr)}
+          placeholder="Seleccionar programas…"
+          maxDisplay={4}
+        />
+      </div>
     </div>
   )
 }
@@ -156,6 +240,8 @@ export function ConfigPrograms() {
   const [newP, setNewP] = useState(emptyDraft())
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
+  const programCodes = programs.map(p => p.code).sort()
+
   function startEdit(p: ProgramRow) { setDraft({ ...p }); setEditingId(p.id) }
   function saveEdit() {
     if (!editingId) return
@@ -166,7 +252,6 @@ export function ConfigPrograms() {
   function handleAdd() {
     if (!newP.code.trim() || !newP.nombre.trim()) return
     const payload: any = { ...newP, code: newP.code.trim().toUpperCase() }
-    // Clean empty strings to null
     Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null })
     payload.code = newP.code.trim().toUpperCase()
     payload.nombre = newP.nombre.trim()
@@ -191,7 +276,7 @@ export function ConfigPrograms() {
       {showNew && (
         <div className="bg-white rounded-xl border border-teal-200 p-5 shadow-sm">
           <p className="text-sm font-semibold text-teal-700 mb-4">Nuevo Programa</p>
-          <ProgramForm draft={newP} onChange={setNewP} isNew />
+          <ProgramForm draft={newP} onChange={setNewP} isNew programCodes={programCodes} />
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setShowNew(false)} className="flex items-center gap-1 text-sm text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50"><X size={14} /> Cancelar</button>
             <button onClick={handleAdd} disabled={!newP.code.trim() || !newP.nombre.trim()} className="flex items-center gap-1 text-sm text-white bg-teal-600 px-4 py-1.5 rounded-lg hover:bg-teal-700 disabled:opacity-40"><Check size={14} /> Guardar</button>
@@ -233,7 +318,7 @@ export function ConfigPrograms() {
                           <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', TYPE_COLORS[type])}>{p.code}</span>
                           <span className="text-sm font-semibold text-slate-700">Editando</span>
                         </div>
-                        <ProgramForm draft={draft} onChange={setDraft} />
+                        <ProgramForm draft={draft} onChange={setDraft} programCodes={programCodes} />
                         <div className="flex justify-end gap-2 mt-3">
                           <button onClick={() => setEditingId(null)} className="flex items-center gap-1 text-sm text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50"><X size={14} /> Cancelar</button>
                           <button onClick={saveEdit} className="flex items-center gap-1 text-sm text-white bg-teal-600 px-4 py-1.5 rounded-lg hover:bg-teal-700"><Check size={14} /> Guardar</button>
@@ -281,16 +366,16 @@ export function ConfigPrograms() {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
                         {p.objetivos && <Detail label="Objetivos" value={p.objetivos} span={3} />}
                         {p.contenidos && <Detail label="Contenidos / Técnicas" value={p.contenidos} span={3} />}
-                        {p.sintomas && <Detail label="Síntomas / Pain Points" value={p.sintomas} />}
-                        {p.momento_journey && <Detail label="Momento Journey" value={p.momento_journey} />}
-                        {p.mind_state_paciente && <Detail label="Mind State" value={p.mind_state_paciente} />}
-                        {p.perfil_paciente && <Detail label="Perfil Paciente Diana" value={p.perfil_paciente} span={2} />}
-                        {p.recursos && <Detail label="Recursos" value={p.recursos} />}
+                        {p.sintomas && <TagDetail label="Síntomas / Pain Points" value={p.sintomas} span={3} />}
+                        {p.momento_journey && <TagDetail label="Momento Journey" value={p.momento_journey} />}
+                        {p.mind_state_paciente && <TagDetail label="Mind State" value={p.mind_state_paciente} />}
+                        {p.perfil_paciente && <TagDetail label="Perfil Paciente Diana" value={p.perfil_paciente} span={2} />}
+                        {p.recursos && <TagDetail label="Recursos" value={p.recursos} span={2} />}
                         {p.frecuencia && <Detail label="Frecuencia" value={p.frecuencia} />}
                         {p.duracion && <Detail label="Duración" value={p.duracion} />}
-                        {p.canal_captacion && <Detail label="Canal Captación" value={p.canal_captacion} />}
-                        {p.productos_asociados && <Detail label="Productos Asociados" value={p.productos_asociados} />}
-                        {p.paquetes_relacionados && <Detail label="Paquetes Relacionados" value={p.paquetes_relacionados} />}
+                        {p.canal_captacion && <TagDetail label="Canal Captación" value={p.canal_captacion} />}
+                        {p.productos_asociados && <TagDetail label="Productos Asociados" value={p.productos_asociados} />}
+                        {p.paquetes_relacionados && <TagDetail label="Paquetes Relacionados" value={p.paquetes_relacionados} />}
                       </div>
                     </td>
                   </tr>
@@ -306,9 +391,25 @@ export function ConfigPrograms() {
 
 function Detail({ label, value, span }: { label: string; value: string; span?: number }) {
   return (
-    <div className={span ? `lg:col-span-${span}` : ''}>
+    <div className={span === 3 ? 'lg:col-span-3' : span === 2 ? 'lg:col-span-2' : ''}>
       <span className="font-semibold text-slate-500 block mb-0.5">{label}</span>
       <span className="text-slate-700">{value}</span>
+    </div>
+  )
+}
+
+function TagDetail({ label, value, span }: { label: string; value: string; span?: number }) {
+  const tags = value.split(',').map(s => s.trim()).filter(Boolean)
+  return (
+    <div className={span === 3 ? 'lg:col-span-3' : span === 2 ? 'lg:col-span-2' : ''}>
+      <span className="font-semibold text-slate-500 block mb-1">{label}</span>
+      <div className="flex flex-wrap gap-1">
+        {tags.map((tag, i) => (
+          <span key={i} className="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[11px]">
+            {tag}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }

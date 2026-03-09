@@ -210,6 +210,7 @@ export type View =
   | 'calendar'
   | 'config-programs'
   | 'config-bundles'
+  | 'config-content'
   | 'incentives'
   | 'security'
   | 'invitations'

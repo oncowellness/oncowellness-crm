@@ -13,6 +13,7 @@ import {
   Layers,
   Coins,
   Shield,
+  UserPlus,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { useAuth } from '@/contexts/AuthContext'
@@ -26,9 +27,10 @@ const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Pacientes', icon: <Users size={18} />, view: 'patients' },
 ]
 
-const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
+const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?: boolean }[] = [
   { label: 'Calendario', icon: <CalendarDays size={18} />, view: 'calendar' },
-  { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives' },
+  { label: 'Invitaciones', icon: <UserPlus size={18} />, view: 'invitations', adminOnly: true },
+  { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives', adminOnly: true },
   { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
   { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs' },
 ]
@@ -153,7 +155,7 @@ export function Sidebar() {
         )}
 
         {BOTTOM_NAV
-          .filter(item => item.view !== 'incentives' || isAdmin)
+          .filter(item => !item.adminOnly || isAdmin)
           .map(item => (
           <div key={item.view}>
             <button

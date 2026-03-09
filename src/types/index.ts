@@ -212,3 +212,4 @@ export type View =
   | 'config-bundles'
   | 'incentives'
   | 'security'
+  | 'invitations'

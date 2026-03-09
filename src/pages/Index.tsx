@@ -15,6 +15,7 @@ import IncentivesPanel from '@/components/incentives/IncentivesPanel'
 import LoginPage from '@/components/auth/LoginPage'
 import EmergencyLockPage from '@/pages/EmergencyLockPage'
 import { RoleGuard } from '@/components/auth/RoleGuard'
+import { InviteUserPanel } from '@/components/admin/InviteUserPanel'
 import { SecurityDashboard } from '@/components/security/SecurityDashboard'
 import { useAuth } from '@/contexts/AuthContext'
 import { useStore } from '@/store/useStore'
@@ -55,6 +56,12 @@ function ViewRouter() {
       )
     case 'security':
       return <SecurityDashboard />
+    case 'invitations':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <InviteUserPanel />
+        </RoleGuard>
+      )
     default:
       return <MainDashboard />
   }

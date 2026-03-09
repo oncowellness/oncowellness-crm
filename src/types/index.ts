@@ -211,3 +211,4 @@ export type View =
   | 'config-programs'
   | 'config-bundles'
   | 'incentives'
+  | 'security'

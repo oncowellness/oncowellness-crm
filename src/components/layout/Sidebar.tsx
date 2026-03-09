@@ -12,6 +12,7 @@ import {
   Settings,
   Layers,
   Coins,
+  Shield,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { useAuth } from '@/contexts/AuthContext'

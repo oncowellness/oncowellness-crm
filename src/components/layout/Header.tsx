@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, Search, ChevronRight, LogOut, Clock, AlertTriangle, Brain, CheckCircle } from 'lucide-react'
+import { Bell, Search, ChevronRight, LogOut, Clock, AlertTriangle, Brain, CheckCircle, TestTube } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatient } from '@/hooks/usePatients'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useAllCrisisOrders } from '@/hooks/useAllCrisisOrders'
 import { useAuth } from '@/contexts/AuthContext'
+import { useNotificationStore } from '@/store/useNotificationStore'
 import { PHASE_LABELS, type Phase } from '../../types'
 import { Button } from '@/components/ui/button'
 import {

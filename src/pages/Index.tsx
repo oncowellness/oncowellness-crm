@@ -56,6 +56,12 @@ function ViewRouter() {
       return <ConfigPrograms />
     case 'config-bundles':
       return <ConfigBundles />
+    case 'config-content':
+      return (
+        <RoleGuard allowedRoles={['admin', 'director']}>
+          <ContentManager />
+        </RoleGuard>
+      )
     case 'incentives':
       return (
         <RoleGuard allowedRoles={['admin', 'director']}>

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Heart, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { validatePassword } from '@/lib/passwordPolicy'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -22,6 +23,12 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
+        const validation = validatePassword(password)
+        if (!validation.isValid) {
+          toast({ title: 'Contraseña insegura', description: validation.errors[0], variant: 'destructive' })
+          setLoading(false)
+          return
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -37,7 +44,7 @@ export default function LoginPage() {
         })
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
+        if (error) throw new Error('Credenciales inválidas. Inténtalo de nuevo.')
       }
     } catch (err: any) {
       toast({

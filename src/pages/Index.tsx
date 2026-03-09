@@ -13,9 +13,13 @@ import { ConfigPrograms } from '@/components/config/ConfigPrograms'
 import { ConfigBundles } from '@/components/config/ConfigBundles'
 import IncentivesPanel from '@/components/incentives/IncentivesPanel'
 import LoginPage from '@/components/auth/LoginPage'
+import EmergencyLockPage from '@/pages/EmergencyLockPage'
 import { RoleGuard } from '@/components/auth/RoleGuard'
+import { SecurityDashboard } from '@/components/security/SecurityDashboard'
 import { useAuth } from '@/contexts/AuthContext'
 import { useStore } from '@/store/useStore'
+import { useInactivityLogout } from '@/hooks/useInactivityLogout'
+import { useEmergencyLock } from '@/hooks/useEmergencyLock'
 
 function ViewRouter() {
   const { view } = useStore()
@@ -49,15 +53,34 @@ function ViewRouter() {
           <IncentivesPanel />
         </RoleGuard>
       )
+    case 'security':
+      return <SecurityDashboard />
     default:
       return <MainDashboard />
   }
 }
 
+function AuthenticatedApp() {
+  useInactivityLogout()
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-y-auto p-6">
+          <ViewRouter />
+        </main>
+      </div>
+    </div>
+  )
+}
+
 const Index = () => {
   const { user, loading } = useAuth()
+  const { isLocked, loading: lockLoading } = useEmergencyLock()
 
-  if (loading) {
+  if (loading || lockLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -72,17 +95,11 @@ const Index = () => {
     return <LoginPage />
   }
 
-  return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-6">
-          <ViewRouter />
-        </main>
-      </div>
-    </div>
-  )
+  if (isLocked) {
+    return <EmergencyLockPage />
+  }
+
+  return <AuthenticatedApp />
 }
 
 export default Index

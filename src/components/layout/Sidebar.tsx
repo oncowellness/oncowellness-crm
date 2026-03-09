@@ -12,9 +12,12 @@ import {
   Settings,
   Layers,
   Coins,
+  Shield,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { useAuth } from '@/contexts/AuthContext'
+import { EmergencyKillSwitch } from '@/components/security/EmergencyKillSwitch'
+import { SystemStatusIndicator } from '@/components/security/SystemStatusIndicator'
 import type { View, Patient } from '../../types'
 import { cn } from '../../lib/utils'
 
@@ -26,6 +29,7 @@ const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
 const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Calendario', icon: <CalendarDays size={18} />, view: 'calendar' },
   { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives' },
+  { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
   { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs' },
 ]
 
@@ -189,6 +193,13 @@ export function Sidebar() {
         ))}
       </nav>
 
+      {/* Emergency Kill Switch - admin only */}
+      {isAdmin && (
+        <div className="px-3 py-2 border-t border-slate-700">
+          <EmergencyKillSwitch />
+        </div>
+      )}
+
       {/* Footer with user info */}
       <div className="px-4 py-3 border-t border-slate-700">
         {profile && (
@@ -202,6 +213,7 @@ export function Sidebar() {
             </div>
           </div>
         )}
+        <SystemStatusIndicator />
         <p className="text-[10px] text-slate-600">v1.0 · Modelo MSK</p>
       </div>
     </aside>

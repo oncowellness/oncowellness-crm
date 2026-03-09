@@ -19,15 +19,15 @@ export function useAuditLog() {
   const log = useCallback(async (entry: AuditEntry) => {
     if (!user) return
 
-    await supabase.from('audit_logs').insert({
+    await supabase.from('audit_logs').insert([{
       user_id: user.id,
       user_email: profile?.email ?? user.email ?? null,
       action_type: entry.action_type,
       resource_type: entry.resource_type,
       resource_id: entry.resource_id ?? null,
       patient_id: entry.patient_id ?? null,
-      metadata: entry.metadata ?? {},
-    })
+      metadata: (entry.metadata ?? {}) as any,
+    }])
   }, [user, profile])
 
   return { log }

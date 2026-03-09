@@ -323,6 +323,35 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          patient_id: string
+          staff_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          patient_id: string
+          staff_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          patient_id?: string
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_assignments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_content: {
         Row: {
           content_id: string
@@ -445,6 +474,7 @@ export type Database = {
           especialidad: string | null
           id: string
           nombre: string
+          suspended: boolean
           tarifa_fijo: number | null
           telefono: string | null
           total_acumulado: number | null
@@ -458,6 +488,7 @@ export type Database = {
           especialidad?: string | null
           id?: string
           nombre: string
+          suspended?: boolean
           tarifa_fijo?: number | null
           telefono?: string | null
           total_acumulado?: number | null
@@ -471,6 +502,7 @@ export type Database = {
           especialidad?: string | null
           id?: string
           nombre?: string
+          suspended?: boolean
           tarifa_fijo?: number | null
           telefono?: string | null
           total_acumulado?: number | null
@@ -614,6 +646,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_assigned_to_patient: {
+        Args: { _patient_id: string; _user_id: string }
         Returns: boolean
       }
     }

@@ -87,6 +87,16 @@ export function PatientDetail() {
   }
 
   function saveEdit() {
+    // Log phase transition if phase changed
+    if (draft.fase_journey && draft.fase_journey !== patient!.fase_journey && user) {
+      logPhaseTransition.mutate({
+        patient_id: patient!.id,
+        previous_phase: patient!.fase_journey,
+        new_phase: draft.fase_journey,
+        performed_by: user.id,
+        performed_by_name: profile?.nombre ?? user.email ?? 'Unknown',
+      })
+    }
     updatePatient.mutate({ id: patient!.id, ...draft })
     setEditing(false)
   }

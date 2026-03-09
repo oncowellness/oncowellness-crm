@@ -28,12 +28,21 @@ const emptyProgram: Omit<Program, 'code'> & { code: string } = {
   code: '', type: 'FX', name: '', description: '', sessions: undefined, duration: undefined,
 }
 
+function nextCodeForType(programs: Program[], type: ProgramType): string {
+  const nums = programs
+    .filter(p => p.type === type)
+    .map(p => parseInt(p.code.split('-')[1] ?? '0'))
+    .filter(n => !isNaN(n))
+  const next = nums.length > 0 ? Math.max(...nums) + 1 : 1
+  return `${type}-${String(next).padStart(2, '0')}`
+}
+
 export function ConfigPrograms() {
   const { programs, addProgram, updateProgram } = useStore()
   const [editingCode, setEditingCode] = useState<string | null>(null)
   const [draft, setDraft] = useState<Program>({} as Program)
   const [showNew, setShowNew] = useState(false)
-  const [newP, setNewP] = useState({ ...emptyProgram })
+  const [newP, setNewP] = useState({ ...emptyProgram, code: nextCodeForType(programs, 'FX') })
 
   function startEdit(p: Program) {
     setDraft({ ...p })
@@ -57,7 +66,7 @@ export function ConfigPrograms() {
       sessions: newP.sessions ? Number(newP.sessions) : undefined,
       duration: newP.duration?.trim() || undefined,
     })
-    setNewP({ ...emptyProgram })
+    setNewP({ ...emptyProgram, code: '' })
     setShowNew(false)
   }
 
@@ -71,7 +80,7 @@ export function ConfigPrograms() {
           <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{programs.length} programas</span>
         </div>
         <button
-          onClick={() => setShowNew(true)}
+          onClick={() => { setNewP({ ...emptyProgram, code: nextCodeForType(programs, 'FX') }); setShowNew(true) }}
           className="flex items-center gap-2 bg-teal-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-teal-700 shadow-sm"
         >
           <Plus size={15} /> Nuevo Programa
@@ -91,7 +100,10 @@ export function ConfigPrograms() {
             <div>
               <label className="text-xs text-slate-500 font-medium block mb-1">Tipo *</label>
               <select className={iCls} value={newP.type}
-                onChange={e => setNewP(n => ({ ...n, type: e.target.value as ProgramType }))}>
+                onChange={e => {
+                  const type = e.target.value as ProgramType
+                  setNewP(n => ({ ...n, type, code: nextCodeForType(programs, type) }))
+                }}>
                 {PROGRAM_TYPES.map(t => <option key={t} value={t}>{t} – {TYPE_LABELS[t]}</option>)}
               </select>
             </div>

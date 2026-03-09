@@ -111,6 +111,32 @@ export interface ContentItem {
   sentDate?: string
 }
 
+export interface ThirtySTSMeasurement {
+  date: string
+  reps: number
+  isBaseline?: boolean
+}
+
+export interface TUGMeasurement {
+  date: string
+  seconds: number
+  isBaseline?: boolean
+}
+
+export type TransversoScore = 0 | 1 | 2 | 3
+
+export interface TransversoMeasurement {
+  date: string
+  score: TransversoScore
+}
+
+export interface BalanceMeasurement {
+  date: string
+  seconds: number
+  testType: 'monopodal' | 'romberg'
+  isBaseline?: boolean
+}
+
 // ─── Patient ──────────────────────────────────────────────────────────────────
 export interface Patient {
   id: string
@@ -133,6 +159,10 @@ export interface Patient {
   // Metrics
   handgrip: HandgripMeasurement[]
   sixMWT: SixMWTMeasurement[]
+  thirtySTS: ThirtySTSMeasurement[]
+  tug: TUGMeasurement[]
+  transverso: TransversoMeasurement[]
+  balance: BalanceMeasurement[]
   phq9: PHQ9Assessment[]
   gad7: GAD7Assessment[]
   facitf: FACITFAssessment[]

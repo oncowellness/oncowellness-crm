@@ -34,6 +34,10 @@ export const MOCK_PATIENTS: Patient[] = [
       { date: '2026-01-15', distanceMeters: 385, heartRatePeak: 138, fatigue: 7 },
       { date: '2026-02-20', distanceMeters: 440, heartRatePeak: 128, fatigue: 4 },
     ],
+    thirtySTS: [],
+    tug: [],
+    transverso: [],
+    balance: [],
     phq9: [
       {
         date: '2025-11-20',
@@ -111,6 +115,10 @@ export const MOCK_PATIENTS: Patient[] = [
       { date: '2026-01-15', distanceMeters: 350, heartRatePeak: 145, fatigue: 7, isBaseline: true },
       { date: '2026-02-15', distanceMeters: 395, heartRatePeak: 138, fatigue: 5 },
     ],
+    thirtySTS: [],
+    tug: [],
+    transverso: [],
+    balance: [],
     phq9: [
       { date: '2026-01-15', answers: [1, 0, 1, 0, 0, 1, 0, 0, 0], totalScore: 3, severity: 'minimal' },
     ],
@@ -163,6 +171,10 @@ export const MOCK_PATIENTS: Patient[] = [
       { date: '2025-12-01', distanceMeters: 510, heartRatePeak: 120, fatigue: 2 },
       { date: '2026-02-01', distanceMeters: 545, heartRatePeak: 115, fatigue: 1 },
     ],
+    thirtySTS: [],
+    tug: [],
+    transverso: [],
+    balance: [],
     phq9: [
       { date: '2025-09-01', answers: [1, 1, 1, 0, 0, 0, 0, 0, 0], totalScore: 3, severity: 'minimal' },
       { date: '2025-12-01', answers: [0, 1, 0, 0, 0, 0, 0, 0, 0], totalScore: 1, severity: 'minimal' },
@@ -217,6 +229,10 @@ export const MOCK_PATIENTS: Patient[] = [
       { date: '2025-10-20', distanceMeters: 265, heartRatePeak: 148, fatigue: 8 },
       { date: '2026-01-20', distanceMeters: 230, heartRatePeak: 150, fatigue: 9 },
     ],
+    thirtySTS: [],
+    tug: [],
+    transverso: [],
+    balance: [],
     phq9: [
       { date: '2025-06-20', answers: [2, 2, 2, 1, 2, 2, 1, 1, 0], totalScore: 13, severity: 'moderate' },
       { date: '2025-10-20', answers: [2, 3, 2, 2, 2, 2, 1, 1, 1], totalScore: 16, severity: 'moderately_severe' },

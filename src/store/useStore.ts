@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Patient, View, PHQ9Assessment, HandgripMeasurement, SixMWTMeasurement, Session, Program, Bundle } from '../types'
+import type { Patient, View, PHQ9Assessment, HandgripMeasurement, SixMWTMeasurement, Session, Program, Bundle, ThirtySTSMeasurement, TUGMeasurement, TransversoMeasurement, BalanceMeasurement } from '../types'
 import { MOCK_PATIENTS } from '../data/patients'
 import { CONTENT_LIBRARY } from '../data/content'
 import { PROGRAMS, BUNDLES } from '../data/programs'
@@ -21,9 +21,13 @@ interface CRMState {
   assignBundle: (patientId: string, bundleCode: string, programCodes: string[]) => void
   sendContent: (patientId: string, contentCode: string) => void
   acknowledgeCrisis: (patientId: string, crisisId: string) => void
-  addPatient: (patient: Omit<Patient, 'id' | 'handgrip' | 'sixMWT' | 'phq9' | 'gad7' | 'facitf' | 'eortc' | 'sessions' | 'contentItems' | 'crisisOrders' | 'clinicalNotes'>) => void
+  addPatient: (patient: Omit<Patient, 'id' | 'handgrip' | 'sixMWT' | 'thirtySTS' | 'tug' | 'transverso' | 'balance' | 'phq9' | 'gad7' | 'facitf' | 'eortc' | 'sessions' | 'contentItems' | 'crisisOrders' | 'clinicalNotes'>) => void
   updatePatient: (id: string, fields: Partial<Pick<Patient, 'name' | 'age' | 'gender' | 'email' | 'phone' | 'diagnosis' | 'cancerType' | 'stage' | 'oncologist' | 'diagnosisDate' | 'currentPhase' | 'mindState'>>) => void
   getPatient: (id: string) => Patient | undefined
+  addThirtySTS: (patientId: string, m: ThirtySTSMeasurement) => void
+  addTUG: (patientId: string, m: TUGMeasurement) => void
+  addTransverso: (patientId: string, m: TransversoMeasurement) => void
+  addBalance: (patientId: string, m: BalanceMeasurement) => void
   addProgram: (p: Program) => void
   updateProgram: (code: string, fields: Partial<Program>) => void
   addBundle: (b: Bundle) => void
@@ -195,6 +199,10 @@ export const useStore = create<CRMState>((set, get) => ({
       id: `P${String(Date.now()).slice(-4)}`,
       handgrip: [],
       sixMWT: [],
+      thirtySTS: [],
+      tug: [],
+      transverso: [],
+      balance: [],
       phq9: [],
       gad7: [],
       facitf: [],
@@ -212,6 +220,22 @@ export const useStore = create<CRMState>((set, get) => ({
       patients: state.patients.map(p => p.id === id ? { ...p, ...fields } : p),
     }))
   },
+
+  addThirtySTS: (patientId, m) => set(state => ({
+    patients: state.patients.map(p => p.id === patientId ? { ...p, thirtySTS: [...p.thirtySTS, m] } : p)
+  })),
+
+  addTUG: (patientId, m) => set(state => ({
+    patients: state.patients.map(p => p.id === patientId ? { ...p, tug: [...p.tug, m] } : p)
+  })),
+
+  addTransverso: (patientId, m) => set(state => ({
+    patients: state.patients.map(p => p.id === patientId ? { ...p, transverso: [...p.transverso, m] } : p)
+  })),
+
+  addBalance: (patientId, m) => set(state => ({
+    patients: state.patients.map(p => p.id === patientId ? { ...p, balance: [...p.balance, m] } : p)
+  })),
 
   addProgram: (p) => {
     set(state => ({ programs: [...state.programs, p] }))

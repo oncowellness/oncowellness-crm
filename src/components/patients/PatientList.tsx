@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Search, Filter, AlertTriangle, CheckCircle, AlertCircle, User, UserPlus } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import { usePatients } from '@/hooks/usePatients'
 import { PHASE_LABELS, type Phase, type AlertStatus } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
 import { NewPatientModal } from './NewPatientModal'
@@ -23,7 +24,8 @@ const PHASE_COLORS: Record<Phase, string> = {
 }
 
 export function PatientList() {
-  const { patients, setView, selectPatient } = useStore()
+  const { setView, selectPatient } = useStore()
+  const { data: patients = [], isLoading } = usePatients()
   const [search, setSearch] = useState('')
   const [filterPhase, setFilterPhase] = useState<Phase | 'all'>('all')
   const [filterAlert, setFilterAlert] = useState<AlertStatus | 'all'>('all')
@@ -31,11 +33,11 @@ export function PatientList() {
 
   const filtered = useMemo(() => {
     return patients.filter(p => {
-      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.cancerType.toLowerCase().includes(search.toLowerCase()) ||
-        p.oncologist.toLowerCase().includes(search.toLowerCase())
-      const matchPhase = filterPhase === 'all' || p.currentPhase === filterPhase
-      const matchAlert = filterAlert === 'all' || p.alertStatus === filterAlert
+      const matchSearch = p.nombre.toLowerCase().includes(search.toLowerCase()) ||
+        (p.tipo_cancer ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (p.oncologo_referente ?? '').toLowerCase().includes(search.toLowerCase())
+      const matchPhase = filterPhase === 'all' || p.fase_journey === filterPhase
+      const matchAlert = filterAlert === 'all' || p.alert_status === filterAlert
       return matchSearch && matchPhase && matchAlert
     })
   }, [patients, search, filterPhase, filterAlert])
@@ -45,13 +47,15 @@ export function PatientList() {
     setView('patient-detail')
   }
 
-  const redCount = useMemo(() => patients.filter(p => p.alertStatus === 'rojo').length, [patients])
-  const yellowCount = useMemo(() => patients.filter(p => p.alertStatus === 'amarillo').length, [patients])
+  const redCount = useMemo(() => patients.filter(p => p.alert_status === 'rojo').length, [patients])
+  const yellowCount = useMemo(() => patients.filter(p => p.alert_status === 'amarillo').length, [patients])
 
   function handleCreated(id: string) {
     setShowNewModal(false)
     if (id) { selectPatient(id); setView('patient-detail') }
   }
+
+  if (isLoading) return <div className="p-6 text-slate-400">Cargando pacientes...</div>
 
   return (
     <div className="p-6 space-y-5">
@@ -135,14 +139,16 @@ export function PatientList() {
           </thead>
           <tbody>
             {filtered.map((patient, i) => {
-              const alert = ALERT_CONFIG[patient.alertStatus]
+              const alertStatus = (patient.alert_status ?? 'verde') as AlertStatus
+              const alert = ALERT_CONFIG[alertStatus]
+              const phase = patient.fase_journey as Phase
               return (
                 <tr
                   key={patient.id}
                   onClick={() => openPatient(patient.id)}
                   className={cn(
                     'border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors',
-                    patient.alertStatus === 'rojo' && 'bg-red-50/40 hover:bg-red-50',
+                    alertStatus === 'rojo' && 'bg-red-50/40 hover:bg-red-50',
                     i === filtered.length - 1 && 'border-b-0'
                   )}
                 >
@@ -152,24 +158,24 @@ export function PatientList() {
                         <User size={14} className="text-teal-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-800">{patient.name}</p>
-                        <p className="text-xs text-slate-500">{patient.age} años · {patient.gender === 'F' ? 'Mujer' : 'Hombre'}</p>
+                        <p className="text-sm font-medium text-slate-800">{patient.nombre}</p>
+                        <p className="text-xs text-slate-500">{patient.edad} años · {patient.genero === 'F' ? 'Mujer' : 'Hombre'}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-slate-700">{patient.cancerType}</p>
-                    <p className="text-xs text-slate-400">Estadio {patient.stage}</p>
+                    <p className="text-sm text-slate-700">{patient.tipo_cancer}</p>
+                    <p className="text-xs text-slate-400">Estadio {patient.estadio}</p>
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-600">{patient.oncologist}</td>
+                  <td className="px-4 py-3 text-sm text-slate-600">{patient.oncologo_referente}</td>
                   <td className="px-4 py-3">
-                    <span className={cn('text-xs font-semibold px-2 py-1 rounded-full', PHASE_COLORS[patient.currentPhase])}>
-                      {patient.currentPhase} · {PHASE_LABELS[patient.currentPhase]}
+                    <span className={cn('text-xs font-semibold px-2 py-1 rounded-full', PHASE_COLORS[phase])}>
+                      {phase} · {PHASE_LABELS[phase]}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-full">
-                      {patient.mindState}
+                      {patient.mind_state}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -178,7 +184,7 @@ export function PatientList() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-400">
-                    {formatDate(patient.diagnosisDate)}
+                    {patient.fecha_diagnostico ? formatDate(patient.fecha_diagnostico) : '—'}
                   </td>
                 </tr>
               )

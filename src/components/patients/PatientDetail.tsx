@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle, AlertCircle, Calendar, Phone, Mail, Stethoscope, FileText, Package, Pencil, X, Save } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import { usePatient, useUpdatePatient } from '@/hooks/usePatients'
+import { usePrograms } from '@/hooks/usePrograms'
+import { useClinicalTests } from '@/hooks/useClinicalTests'
+import { useSessions } from '@/hooks/useSessions'
+import { useCrisisOrders, useAcknowledgeCrisis } from '@/hooks/useCrisisOrders'
+import { useClinicalNotes } from '@/hooks/useClinicalNotes'
 import { JourneyTimeline } from './JourneyTimeline'
 import { formatDate, cn } from '../../lib/utils'
-import { PHASE_LABELS, type AlertStatus, type Phase, type MindState, type Patient } from '../../types'
-
-type PatientDraft = Pick<Patient, 'name' | 'age' | 'gender' | 'email' | 'phone' | 'diagnosis' | 'cancerType' | 'stage' | 'oncologist' | 'diagnosisDate' | 'currentPhase' | 'mindState'>
+import { PHASE_LABELS, type AlertStatus, type Phase, type MindState } from '../../types'
 
 const CANCER_TYPES = [
   'Mama', 'Pulmón', 'Colon/Recto', 'Próstata', 'Linfoma', 'Leucemia',
@@ -13,69 +17,76 @@ const CANCER_TYPES = [
 ]
 const MIND_STATES: MindState[] = ['Activo', 'Ansioso', 'Depresivo', 'Resiliente', 'Vulnerable']
 const PHASES = Object.keys(PHASE_LABELS) as Phase[]
-
 const iCls = 'w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400'
 
 const ALERT_CONFIG: Record<AlertStatus, { label: string; icon: React.ReactNode; classes: string; border: string }> = {
-  verde: {
-    label: 'Estable',
-    icon: <CheckCircle size={16} />,
-    classes: 'bg-green-50 text-green-700',
-    border: 'border-green-200',
-  },
-  amarillo: {
-    label: 'Requiere Atención',
-    icon: <AlertCircle size={16} />,
-    classes: 'bg-yellow-50 text-yellow-700',
-    border: 'border-yellow-200',
-  },
-  rojo: {
-    label: 'ALERTA ROJA',
-    icon: <AlertTriangle size={16} />,
-    classes: 'bg-red-50 text-red-700',
-    border: 'border-red-400',
-  },
+  verde: { label: 'Estable', icon: <CheckCircle size={16} />, classes: 'bg-green-50 text-green-700', border: 'border-green-200' },
+  amarillo: { label: 'Requiere Atención', icon: <AlertCircle size={16} />, classes: 'bg-yellow-50 text-yellow-700', border: 'border-yellow-200' },
+  rojo: { label: 'ALERTA ROJA', icon: <AlertTriangle size={16} />, classes: 'bg-red-50 text-red-700', border: 'border-red-400' },
 }
 
 export function PatientDetail() {
-  const { selectedPatientId, patients, acknowledgeCrisis, updatePatient, programs } = useStore()
-  const patient = patients.find(p => p.id === selectedPatientId)
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState<PatientDraft>({} as PatientDraft)
+  const { selectedPatientId } = useStore()
+  const { data: patient, isLoading } = usePatient(selectedPatientId)
+  const { data: programs = [] } = usePrograms()
+  const { data: clinicalTests = [] } = useClinicalTests(selectedPatientId)
+  const { data: sessions = [] } = useSessions(selectedPatientId)
+  const { data: crisisOrders = [] } = useCrisisOrders(selectedPatientId)
+  const { data: clinicalNotes = [] } = useClinicalNotes(selectedPatientId)
+  const updatePatient = useUpdatePatient()
+  const acknowledgeCrisis = useAcknowledgeCrisis()
 
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState<any>({})
+
+  if (isLoading) return <div className="p-6 text-slate-400">Cargando paciente...</div>
   if (!patient) return null
+
+  const alertStatus = (patient.alert_status ?? 'verde') as AlertStatus
+  const alert = ALERT_CONFIG[alertStatus]
+
+  // Extract test data from clinical_tests
+  const handgripTests = clinicalTests.filter(t => t.tipo === 'Handgrip')
+  const sixMWTTests = clinicalTests.filter(t => t.tipo === '6MWT')
+  const phq9Tests = clinicalTests.filter(t => t.tipo === 'PHQ-9')
+  const facitfTests = clinicalTests.filter(t => t.tipo === 'FACIT-F')
+
+  const latestHandgrip = handgripTests[handgripTests.length - 1]
+  const baselineHandgrip = handgripTests.find(h => h.is_baseline)
+  const latestSixMWT = sixMWTTests[sixMWTTests.length - 1]
+  const baselineSixMWT = sixMWTTests.find(s => s.is_baseline)
+  const latestPHQ9 = phq9Tests[phq9Tests.length - 1]
+  const latestFACITF = facitfTests[facitfTests.length - 1]
+
+  const assignedProgramDetails = programs.filter(pr => (patient.assigned_programs ?? []).includes(pr.code))
+  const pendingCrisis = crisisOrders.filter(c => c.status === 'pendiente')
 
   function startEdit() {
     setDraft({
-      name: patient!.name,
-      age: patient!.age,
-      gender: patient!.gender,
+      nombre: patient!.nombre,
+      edad: patient!.edad,
+      genero: patient!.genero,
       email: patient!.email,
-      phone: patient!.phone,
-      diagnosis: patient!.diagnosis,
-      cancerType: patient!.cancerType,
-      stage: patient!.stage,
-      oncologist: patient!.oncologist,
-      diagnosisDate: patient!.diagnosisDate,
-      currentPhase: patient!.currentPhase,
-      mindState: patient!.mindState,
+      telefono: patient!.telefono,
+      diagnostico: patient!.diagnostico,
+      tipo_cancer: patient!.tipo_cancer,
+      estadio: patient!.estadio,
+      oncologo_referente: patient!.oncologo_referente,
+      fecha_diagnostico: patient!.fecha_diagnostico,
+      fase_journey: patient!.fase_journey,
+      mind_state: patient!.mind_state,
     })
     setEditing(true)
   }
 
   function saveEdit() {
-    updatePatient(patient!.id, draft)
+    updatePatient.mutate({ id: patient!.id, ...draft })
     setEditing(false)
   }
 
-  const alert = ALERT_CONFIG[patient.alertStatus]
-  const assignedProgramDetails = programs.filter(pr => patient.assignedPrograms.includes(pr.code))
-  const pendingCrisis = patient.crisisOrders.filter(c => c.status === 'pendiente')
-  const latestPHQ9 = patient.phq9[patient.phq9.length - 1]
-  const latestHandgrip = patient.handgrip[patient.handgrip.length - 1]
-  const baselineHandgrip = patient.handgrip.find(h => h.isBaseline)
-  const latestSixMWT = patient.sixMWT[patient.sixMWT.length - 1]
-  const baselineSixMWT = patient.sixMWT.find(s => s.isBaseline)
+  // Helper to get numeric value from clinical test
+  const getVal = (test: any) => test?.valor_numerico ?? null
+  const getJson = (test: any) => test?.valores_json as any
 
   return (
     <div className="p-6 space-y-5">
@@ -91,10 +102,10 @@ export function PatientDetail() {
               <div key={c.id} className="mt-2 flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-red-200">
                 <div>
                   <p className="text-xs font-semibold text-red-700">PS-01: Intervención en Crisis</p>
-                  <p className="text-xs text-red-500">{c.trigger} · {formatDate(c.date)}</p>
+                  <p className="text-xs text-red-500">{c.trigger_reason} · {formatDate(c.created_at)}</p>
                 </div>
                 <button
-                  onClick={() => acknowledgeCrisis(patient.id, c.id)}
+                  onClick={() => acknowledgeCrisis.mutate(c.id)}
                   className="text-xs bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700"
                 >
                   Marcar Atendida
@@ -110,48 +121,48 @@ export function PatientDetail() {
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 text-xl font-bold shrink-0">
-              {patient.name.charAt(0)}
+              {patient.nombre.charAt(0)}
             </div>
             {editing ? (
               <div className="grid grid-cols-2 gap-2 flex-1">
                 <div className="col-span-2">
                   <label className="text-[10px] text-slate-400 font-medium">Nombre</label>
-                  <input className={iCls} value={draft.name ?? ''} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))} />
+                  <input className={iCls} value={draft.nombre ?? ''} onChange={e => setDraft((d: any) => ({ ...d, nombre: e.target.value }))} />
                 </div>
                 <div>
                   <label className="text-[10px] text-slate-400 font-medium">Edad</label>
-                  <input type="number" className={iCls} value={draft.age ?? ''} onChange={e => setDraft(d => ({ ...d, age: parseInt(e.target.value) || 0 }))} />
+                  <input type="number" className={iCls} value={draft.edad ?? ''} onChange={e => setDraft((d: any) => ({ ...d, edad: parseInt(e.target.value) || 0 }))} />
                 </div>
                 <div>
                   <label className="text-[10px] text-slate-400 font-medium">Sexo</label>
-                  <select className={iCls} value={draft.gender} onChange={e => setDraft(d => ({ ...d, gender: e.target.value as 'M' | 'F' }))}>
+                  <select className={iCls} value={draft.genero} onChange={e => setDraft((d: any) => ({ ...d, genero: e.target.value }))}>
                     <option value="F">Mujer</option>
                     <option value="M">Hombre</option>
                   </select>
                 </div>
                 <div className="col-span-2">
                   <label className="text-[10px] text-slate-400 font-medium">Diagnóstico</label>
-                  <input className={iCls} value={draft.diagnosis ?? ''} onChange={e => setDraft(d => ({ ...d, diagnosis: e.target.value }))} />
+                  <input className={iCls} value={draft.diagnostico ?? ''} onChange={e => setDraft((d: any) => ({ ...d, diagnostico: e.target.value }))} />
                 </div>
                 <div>
                   <label className="text-[10px] text-slate-400 font-medium">Tipo de cáncer</label>
-                  <select className={iCls} value={draft.cancerType ?? ''} onChange={e => setDraft(d => ({ ...d, cancerType: e.target.value }))}>
-                    <option value="—">— Sin especificar —</option>
+                  <select className={iCls} value={draft.tipo_cancer ?? ''} onChange={e => setDraft((d: any) => ({ ...d, tipo_cancer: e.target.value }))}>
+                    <option value="">— Sin especificar —</option>
                     {CANCER_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-[10px] text-slate-400 font-medium">Estadio TNM</label>
-                  <input className={iCls} value={draft.stage ?? ''} onChange={e => setDraft(d => ({ ...d, stage: e.target.value }))} />
+                  <input className={iCls} value={draft.estadio ?? ''} onChange={e => setDraft((d: any) => ({ ...d, estadio: e.target.value }))} />
                 </div>
               </div>
             ) : (
               <div>
-                <h2 className="text-lg font-bold text-slate-800">{patient.name}</h2>
+                <h2 className="text-lg font-bold text-slate-800">{patient.nombre}</h2>
                 <p className="text-sm text-slate-500">
-                  {patient.age} años · {patient.gender === 'F' ? 'Mujer' : 'Hombre'} · {patient.cancerType} Estadio {patient.stage}
+                  {patient.edad} años · {patient.genero === 'F' ? 'Mujer' : 'Hombre'} · {patient.tipo_cancer} Estadio {patient.estadio}
                 </p>
-                <p className="text-sm text-slate-500 mt-0.5">{patient.diagnosis}</p>
+                <p className="text-sm text-slate-500 mt-0.5">{patient.diagnostico}</p>
               </div>
             )}
           </div>
@@ -161,27 +172,21 @@ export function PatientDetail() {
             </span>
             {editing ? (
               <select className="text-xs border border-slate-200 rounded-full px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                value={draft.mindState} onChange={e => setDraft(d => ({ ...d, mindState: e.target.value as MindState }))}>
+                value={draft.mind_state} onChange={e => setDraft((d: any) => ({ ...d, mind_state: e.target.value }))}>
                 {MIND_STATES.map(ms => <option key={ms} value={ms}>{ms}</option>)}
               </select>
             ) : (
               <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
-                Estado mental: {patient.mindState}
+                Estado mental: {patient.mind_state}
               </span>
             )}
             {editing ? (
               <div className="flex gap-1.5 mt-1">
-                <button onClick={() => setEditing(false)} className="flex items-center gap-1 text-xs text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-50">
-                  <X size={12} /> Cancelar
-                </button>
-                <button onClick={saveEdit} className="flex items-center gap-1 text-xs text-white bg-teal-600 px-2.5 py-1 rounded-lg hover:bg-teal-700">
-                  <Save size={12} /> Guardar
-                </button>
+                <button onClick={() => setEditing(false)} className="flex items-center gap-1 text-xs text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-50"><X size={12} /> Cancelar</button>
+                <button onClick={saveEdit} className="flex items-center gap-1 text-xs text-white bg-teal-600 px-2.5 py-1 rounded-lg hover:bg-teal-700"><Save size={12} /> Guardar</button>
               </div>
             ) : (
-              <button onClick={startEdit} className="flex items-center gap-1 text-xs text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-50 mt-1">
-                <Pencil size={12} /> Editar
-              </button>
+              <button onClick={startEdit} className="flex items-center gap-1 text-xs text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-50 mt-1"><Pencil size={12} /> Editar</button>
             )}
           </div>
         </div>
@@ -189,30 +194,16 @@ export function PatientDetail() {
         {/* Contact & clinical info */}
         {editing ? (
           <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div>
-              <label className="text-[10px] text-slate-400 font-medium block mb-0.5">Email</label>
-              <input type="email" className={iCls} value={draft.email ?? ''} onChange={e => setDraft(d => ({ ...d, email: e.target.value }))} />
-            </div>
-            <div>
-              <label className="text-[10px] text-slate-400 font-medium block mb-0.5">Teléfono</label>
-              <input type="tel" className={iCls} value={draft.phone ?? ''} onChange={e => setDraft(d => ({ ...d, phone: e.target.value }))} />
-            </div>
-            <div>
-              <label className="text-[10px] text-slate-400 font-medium block mb-0.5">Oncólogo/a</label>
-              <input className={iCls} value={draft.oncologist ?? ''} onChange={e => setDraft(d => ({ ...d, oncologist: e.target.value }))} />
-            </div>
-            <div>
-              <label className="text-[10px] text-slate-400 font-medium block mb-0.5">Fecha diagnóstico</label>
-              <input type="date" className={iCls} value={draft.diagnosisDate ?? ''} onChange={e => setDraft(d => ({ ...d, diagnosisDate: e.target.value }))} />
-            </div>
+            <div><label className="text-[10px] text-slate-400 font-medium block mb-0.5">Email</label><input type="email" className={iCls} value={draft.email ?? ''} onChange={e => setDraft((d: any) => ({ ...d, email: e.target.value }))} /></div>
+            <div><label className="text-[10px] text-slate-400 font-medium block mb-0.5">Teléfono</label><input type="tel" className={iCls} value={draft.telefono ?? ''} onChange={e => setDraft((d: any) => ({ ...d, telefono: e.target.value }))} /></div>
+            <div><label className="text-[10px] text-slate-400 font-medium block mb-0.5">Oncólogo/a</label><input className={iCls} value={draft.oncologo_referente ?? ''} onChange={e => setDraft((d: any) => ({ ...d, oncologo_referente: e.target.value }))} /></div>
+            <div><label className="text-[10px] text-slate-400 font-medium block mb-0.5">Fecha diagnóstico</label><input type="date" className={iCls} value={draft.fecha_diagnostico ?? ''} onChange={e => setDraft((d: any) => ({ ...d, fecha_diagnostico: e.target.value }))} /></div>
             <div className="col-span-2 lg:col-span-4">
               <label className="text-[10px] text-slate-400 font-medium block mb-1">Fase del Journey</label>
               <div className="flex flex-wrap gap-1.5">
                 {PHASES.map(phase => (
-                  <button key={phase} onClick={() => setDraft(d => ({ ...d, currentPhase: phase }))}
-                    className={cn('text-xs px-2.5 py-1 rounded-full border font-medium transition-colors',
-                      draft.currentPhase === phase ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300'
-                    )}>
+                  <button key={phase} onClick={() => setDraft((d: any) => ({ ...d, fase_journey: phase }))}
+                    className={cn('text-xs px-2.5 py-1 rounded-full border font-medium transition-colors', draft.fase_journey === phase ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300')}>
                     {phase} · {PHASE_LABELS[phase]}
                   </button>
                 ))}
@@ -221,97 +212,42 @@ export function PatientDetail() {
           </div>
         ) : (
           <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <Mail size={13} className="text-slate-400" />
-              {patient.email || <span className="text-slate-300 italic">Sin email</span>}
-            </div>
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <Phone size={13} className="text-slate-400" />
-              {patient.phone || <span className="text-slate-300 italic">Sin teléfono</span>}
-            </div>
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <Stethoscope size={13} className="text-slate-400" />
-              {patient.oncologist}
-            </div>
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <Calendar size={13} className="text-slate-400" />
-              Dx: {formatDate(patient.diagnosisDate)}
-            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-600"><Mail size={13} className="text-slate-400" />{patient.email || <span className="text-slate-300 italic">Sin email</span>}</div>
+            <div className="flex items-center gap-2 text-xs text-slate-600"><Phone size={13} className="text-slate-400" />{patient.telefono || <span className="text-slate-300 italic">Sin teléfono</span>}</div>
+            <div className="flex items-center gap-2 text-xs text-slate-600"><Stethoscope size={13} className="text-slate-400" />{patient.oncologo_referente}</div>
+            <div className="flex items-center gap-2 text-xs text-slate-600"><Calendar size={13} className="text-slate-400" />Dx: {patient.fecha_diagnostico ? formatDate(patient.fecha_diagnostico) : '—'}</div>
           </div>
         )}
       </div>
 
       {/* Journey timeline */}
-      <JourneyTimeline patient={patient} />
+      <JourneyTimeline currentPhase={patient.fase_journey as Phase} mindState={patient.mind_state ?? 'Activo'} />
 
       {/* Key metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Handgrip */}
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <p className="text-xs text-slate-500 mb-1">Handgrip (dominante)</p>
-          <p className="text-2xl font-bold text-slate-800">
-            {latestHandgrip ? `${latestHandgrip.dominantHand} kg` : 'N/D'}
-          </p>
-          {baselineHandgrip && latestHandgrip && latestHandgrip !== baselineHandgrip && (
-            <p className={cn(
-              'text-xs mt-1 font-medium',
-              latestHandgrip.dominantHand >= baselineHandgrip.dominantHand ? 'text-green-600' : 'text-red-500'
-            )}>
-              {latestHandgrip.dominantHand >= baselineHandgrip.dominantHand ? '↑' : '↓'}
-              {' '}{Math.abs(latestHandgrip.dominantHand - baselineHandgrip.dominantHand).toFixed(1)} kg vs basal
-            </p>
-          )}
+          <p className="text-2xl font-bold text-slate-800">{latestHandgrip ? `${getVal(latestHandgrip)} kg` : 'N/D'}</p>
         </div>
-        {/* 6MWT */}
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <p className="text-xs text-slate-500 mb-1">6MWT (distancia)</p>
-          <p className="text-2xl font-bold text-slate-800">
-            {latestSixMWT ? `${latestSixMWT.distanceMeters} m` : 'N/D'}
-          </p>
-          {baselineSixMWT && latestSixMWT && latestSixMWT !== baselineSixMWT && (
-            <p className={cn(
-              'text-xs mt-1 font-medium',
-              latestSixMWT.distanceMeters >= baselineSixMWT.distanceMeters ? 'text-green-600' : 'text-red-500'
-            )}>
-              {latestSixMWT.distanceMeters >= baselineSixMWT.distanceMeters ? '↑' : '↓'}
-              {' '}{Math.abs(latestSixMWT.distanceMeters - baselineSixMWT.distanceMeters)} m vs basal
-            </p>
-          )}
+          <p className="text-2xl font-bold text-slate-800">{latestSixMWT ? `${getVal(latestSixMWT)} m` : 'N/D'}</p>
         </div>
-        {/* PHQ-9 */}
-        <div className={cn(
-          'rounded-xl border p-4',
-          latestPHQ9?.totalScore >= 10 ? 'bg-red-50 border-red-300' : 'bg-white border-slate-200'
-        )}>
+        <div className={cn('rounded-xl border p-4', latestPHQ9 && getVal(latestPHQ9) >= 10 ? 'bg-red-50 border-red-300' : 'bg-white border-slate-200')}>
           <p className="text-xs text-slate-500 mb-1">PHQ-9 (último)</p>
-          <p className={cn(
-            'text-2xl font-bold',
-            latestPHQ9?.totalScore >= 10 ? 'text-red-600' : 'text-slate-800'
-          )}>
-            {latestPHQ9 ? latestPHQ9.totalScore : 'N/D'}
+          <p className={cn('text-2xl font-bold', latestPHQ9 && getVal(latestPHQ9) >= 10 ? 'text-red-600' : 'text-slate-800')}>
+            {latestPHQ9 ? getVal(latestPHQ9) : 'N/D'}
           </p>
-          {latestPHQ9 && (
-            <p className="text-xs mt-1 text-slate-500 capitalize">
-              {latestPHQ9.severity.replace('_', ' ')}
-              {latestPHQ9.totalScore >= 10 && ' ⚠️'}
-            </p>
-          )}
         </div>
-        {/* FACIT-F */}
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <p className="text-xs text-slate-500 mb-1">FACIT-F (fatiga)</p>
-          <p className="text-2xl font-bold text-slate-800">
-            {patient.facitf.length > 0
-              ? patient.facitf[patient.facitf.length - 1].totalScore
-              : 'N/D'}
-          </p>
+          <p className="text-2xl font-bold text-slate-800">{latestFACITF ? getVal(latestFACITF) : 'N/D'}</p>
           <p className="text-xs text-slate-400 mt-1">Rango 0–52 (mayor = mejor)</p>
         </div>
       </div>
 
       {/* Programs & Sessions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Active programs */}
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-center gap-2 mb-4">
             <Package size={16} className="text-teal-600" />
@@ -321,52 +257,43 @@ export function PatientDetail() {
             {assignedProgramDetails.map(prog => (
               <div key={prog.code} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                 <div>
-                  <p className="text-xs font-semibold text-slate-700">{prog.code} – {prog.name}</p>
-                  <p className="text-xs text-slate-400">{prog.description}</p>
+                  <p className="text-xs font-semibold text-slate-700">{prog.code} – {prog.nombre}</p>
+                  <p className="text-xs text-slate-400">{prog.descripcion}</p>
                 </div>
-                <span className={cn(
-                  'text-xs px-2 py-0.5 rounded-full font-medium',
-                  prog.type === 'FX' && 'bg-blue-100 text-blue-700',
-                  prog.type === 'PS' && 'bg-purple-100 text-purple-700',
-                  prog.type === 'NU' && 'bg-green-100 text-green-700',
-                  prog.type === 'EO' && 'bg-pink-100 text-pink-700',
-                  prog.type === 'TS' && 'bg-orange-100 text-orange-700',
-                )}>
-                  {prog.type}
-                </span>
+                <span className={cn('text-xs px-2 py-0.5 rounded-full font-medium',
+                  prog.tipo === 'FX' && 'bg-blue-100 text-blue-700',
+                  prog.tipo === 'PS' && 'bg-purple-100 text-purple-700',
+                  prog.tipo === 'NU' && 'bg-green-100 text-green-700',
+                  prog.tipo === 'EO' && 'bg-pink-100 text-pink-700',
+                  prog.tipo === 'TS' && 'bg-orange-100 text-orange-700',
+                )}>{prog.tipo}</span>
               </div>
             ))}
-            {assignedProgramDetails.length === 0 && (
-              <p className="text-xs text-slate-400 text-center py-4">Sin programas asignados</p>
-            )}
+            {assignedProgramDetails.length === 0 && <p className="text-xs text-slate-400 text-center py-4">Sin programas asignados</p>}
           </div>
         </div>
 
-        {/* Recent sessions */}
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-center gap-2 mb-4">
             <Calendar size={16} className="text-teal-600" />
             <h3 className="text-sm font-semibold text-slate-700">Sesiones Recientes</h3>
           </div>
           <div className="space-y-2">
-            {patient.sessions.slice(-6).reverse().map(session => {
-              const prog = programs.find(p => p.code === session.programCode)
+            {sessions.slice(0, 6).map(session => {
+              const prog = programs.find(p => p.code === session.programa_code)
               return (
                 <div key={session.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                   <div>
-                    <p className="text-xs font-semibold text-slate-700">{session.programCode} – {prog?.name}</p>
-                    <p className="text-xs text-slate-400">{formatDate(session.date)} · {session.therapist}</p>
-                    {session.notes && <p className="text-xs text-slate-500 italic">{session.notes}</p>}
+                    <p className="text-xs font-semibold text-slate-700">{session.programa_code} – {prog?.nombre}</p>
+                    <p className="text-xs text-slate-400">{formatDate(session.fecha)} · {session.therapist_name ?? '—'}</p>
+                    {session.notas && <p className="text-xs text-slate-500 italic">{session.notas}</p>}
                   </div>
-                  <span className={cn(
-                    'text-xs px-2 py-0.5 rounded-full',
+                  <span className={cn('text-xs px-2 py-0.5 rounded-full',
                     session.status === 'realizada' && 'bg-green-100 text-green-700',
                     session.status === 'confirmada' && 'bg-blue-100 text-blue-700',
                     session.status === 'pendiente' && 'bg-yellow-100 text-yellow-700',
                     session.status === 'cancelada' && 'bg-red-100 text-red-700',
-                  )}>
-                    {session.status}
-                  </span>
+                  )}>{session.status}</span>
                 </div>
               )
             })}
@@ -381,20 +308,17 @@ export function PatientDetail() {
           <h3 className="text-sm font-semibold text-slate-700">Notas Clínicas</h3>
         </div>
         <div className="space-y-3">
-          {patient.clinicalNotes.map(note => (
+          {clinicalNotes.map(note => (
             <div key={note.id} className="bg-slate-50 rounded-lg p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-slate-700">{note.author}</span>
+                <span className="text-xs font-semibold text-slate-700">{note.author_name ?? '—'}</span>
                 <div className="flex items-center gap-2">
-                  <span className={cn(
-                    'text-[10px] px-2 py-0.5 rounded-full',
-                    note.type === 'interconsulta' && 'bg-blue-100 text-blue-600',
-                    note.type === 'evolucion' && 'bg-green-100 text-green-600',
-                    note.type === 'incidencia' && 'bg-red-100 text-red-600',
-                  )}>
-                    {note.type}
-                  </span>
-                  <span className="text-xs text-slate-400">{formatDate(note.date)}</span>
+                  <span className={cn('text-[10px] px-2 py-0.5 rounded-full',
+                    note.tipo === 'interconsulta' && 'bg-blue-100 text-blue-600',
+                    note.tipo === 'evolucion' && 'bg-green-100 text-green-600',
+                    note.tipo === 'incidencia' && 'bg-red-100 text-red-600',
+                  )}>{note.tipo}</span>
+                  <span className="text-xs text-slate-400">{formatDate(note.created_at)}</span>
                 </div>
               </div>
               <p className="text-xs text-slate-600">{note.content}</p>

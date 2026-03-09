@@ -1,25 +1,14 @@
 import {
-  LayoutDashboard,
-  Users,
-  Activity,
-  Brain,
-  BookOpen,
-  BarChart2,
-  Package,
-  Heart,
-  CalendarDays,
-  ChevronRight,
-  Settings,
-  Layers,
-  Coins,
-  Shield,
-  UserPlus,
+  LayoutDashboard, Users, Activity, Brain, BookOpen, BarChart2, Package,
+  Heart, CalendarDays, ChevronRight, Settings, Layers, Coins, Shield, UserPlus,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import { usePatients } from '@/hooks/usePatients'
+import { useAllCrisisOrders } from '@/hooks/useAllCrisisOrders'
 import { useAuth } from '@/contexts/AuthContext'
 import { EmergencyKillSwitch } from '@/components/security/EmergencyKillSwitch'
 import { SystemStatusIndicator } from '@/components/security/SystemStatusIndicator'
-import type { View, Patient } from '../../types'
+import type { View } from '../../types'
 import { cn } from '../../lib/utils'
 
 const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
@@ -50,52 +39,15 @@ const PATIENT_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Dashboard Clínico', icon: <BarChart2 size={16} />, view: 'clinical-dashboard' },
 ]
 
-interface PatientMenuProps {
-  patient: Patient
-  currentView: View
-  onNavigate: (view: View) => void
-}
-
-function PatientSidebarMenu({ patient, currentView, onNavigate }: PatientMenuProps) {
-  return (
-    <div className="my-2 py-2 border-y border-slate-800 bg-slate-800/30 rounded-lg">
-      {/* Patient context label */}
-      <div className="flex items-center gap-2 px-3 mb-2">
-        <ChevronRight size={12} className="text-teal-400 shrink-0" />
-        <p className="text-[11px] text-teal-400 font-semibold uppercase tracking-wide truncate">
-          {patient.name}
-        </p>
-      </div>
-      <div className="space-y-0.5">
-        {PATIENT_NAV.map(item => (
-          <button
-            key={item.view}
-            onClick={() => onNavigate(item.view)}
-            className={cn(
-              'w-full flex items-center gap-3 pl-6 pr-3 py-2 rounded-lg text-sm font-medium transition-colors',
-              currentView === item.view
-                ? 'bg-teal-600 text-white'
-                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-            )}
-          >
-            {item.icon}
-            {item.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 export function Sidebar() {
-  const { view, setView, patients, selectedPatientId } = useStore()
+  const { view, setView, selectedPatientId } = useStore()
+  const { data: patients = [] } = usePatients()
+  const { data: crisisOrders = [] } = useAllCrisisOrders()
   const { isAdmin, profile, roles, hasRole, signOut } = useAuth()
   const isDirector = hasRole('director')
 
-  const redAlerts = patients.filter(p => p.alertStatus === 'rojo').length
-  const pendingCrisis = patients.reduce((acc, p) =>
-    acc + p.crisisOrders.filter(c => c.status === 'pendiente').length, 0
-  )
+  const redAlerts = patients.filter(p => p.alert_status === 'rojo').length
+  const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente').length
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId)
   const showPatientMenu = selectedPatient && !['dashboard', 'calendar', 'patients', 'config-programs', 'config-bundles', 'incentives'].includes(view)
@@ -103,7 +55,6 @@ export function Sidebar() {
 
   return (
     <aside className="w-64 min-h-screen bg-slate-900 text-white flex flex-col">
-      {/* Logo */}
       <div className="px-6 py-5 border-b border-slate-700">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
@@ -116,83 +67,51 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Alerts banner */}
       {(redAlerts > 0 || pendingCrisis > 0) && (
         <div className="mx-3 mt-3 bg-red-900/50 border border-red-700 rounded-lg px-3 py-2">
           <p className="text-xs font-semibold text-red-300">Alertas activas</p>
-          {redAlerts > 0 && (
-            <p className="text-xs text-red-200">{redAlerts} paciente{redAlerts > 1 ? 's' : ''} en Alerta Roja</p>
-          )}
-          {pendingCrisis > 0 && (
-            <p className="text-xs text-red-200">{pendingCrisis} orden{pendingCrisis > 1 ? 'es' : ''} de crisis pendiente{pendingCrisis > 1 ? 's' : ''}</p>
-          )}
+          {redAlerts > 0 && <p className="text-xs text-red-200">{redAlerts} paciente{redAlerts > 1 ? 's' : ''} en Alerta Roja</p>}
+          {pendingCrisis > 0 && <p className="text-xs text-red-200">{pendingCrisis} orden{pendingCrisis > 1 ? 'es' : ''} de crisis pendiente{pendingCrisis > 1 ? 's' : ''}</p>}
         </div>
       )}
 
-      {/* Main navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {TOP_NAV.map(item => (
-          <button
-            key={item.view}
-            onClick={() => setView(item.view)}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-              view === item.view
-                ? 'bg-teal-600 text-white'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-            )}
-          >
-            {item.icon}
-            {item.label}
+          <button key={item.view} onClick={() => setView(item.view)} className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', view === item.view ? 'bg-teal-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white')}>
+            {item.icon}{item.label}
           </button>
         ))}
 
-        {/* Patient sub-nav — only shown when a patient is selected */}
         {showPatientMenu && (
-          <PatientSidebarMenu
-            patient={selectedPatient}
-            currentView={view}
-            onNavigate={setView}
-          />
+          <div className="my-2 py-2 border-y border-slate-800 bg-slate-800/30 rounded-lg">
+            <div className="flex items-center gap-2 px-3 mb-2">
+              <ChevronRight size={12} className="text-teal-400 shrink-0" />
+              <p className="text-[11px] text-teal-400 font-semibold uppercase tracking-wide truncate">{selectedPatient.nombre}</p>
+            </div>
+            <div className="space-y-0.5">
+              {PATIENT_NAV.map(item => (
+                <button key={item.view} onClick={() => setView(item.view)} className={cn('w-full flex items-center gap-3 pl-6 pr-3 py-2 rounded-lg text-sm font-medium transition-colors', view === item.view ? 'bg-teal-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white')}>
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
-        {BOTTOM_NAV
-          .filter(item => {
-            if (item.directorOnly && !isDirector) return false
-            if (item.adminOnly && !isAdmin) return false
-            return true
-          })
-          .map(item => (
+        {BOTTOM_NAV.filter(item => {
+          if (item.directorOnly && !isDirector) return false
+          if (item.adminOnly && !isAdmin) return false
+          return true
+        }).map(item => (
           <div key={item.view}>
-            <button
-              onClick={() => setView(item.view)}
-              className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                inConfig && item.view === 'config-programs'
-                  ? 'bg-teal-600 text-white'
-                  : view === item.view
-                    ? 'bg-teal-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-              )}
-            >
-              {item.icon}
-              {item.label}
+            <button onClick={() => setView(item.view)} className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', inConfig && item.view === 'config-programs' ? 'bg-teal-600 text-white' : view === item.view ? 'bg-teal-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white')}>
+              {item.icon}{item.label}
             </button>
             {item.view === 'config-programs' && inConfig && (
               <div className="mt-0.5 space-y-0.5">
                 {CONFIG_NAV.map(sub => (
-                  <button
-                    key={sub.view}
-                    onClick={() => setView(sub.view)}
-                    className={cn(
-                      'w-full flex items-center gap-3 pl-6 pr-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                      view === sub.view
-                        ? 'bg-teal-600 text-white'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                    )}
-                  >
-                    {sub.icon}
-                    {sub.label}
+                  <button key={sub.view} onClick={() => setView(sub.view)} className={cn('w-full flex items-center gap-3 pl-6 pr-3 py-2 rounded-lg text-sm font-medium transition-colors', view === sub.view ? 'bg-teal-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white')}>
+                    {sub.icon}{sub.label}
                   </button>
                 ))}
               </div>
@@ -201,32 +120,26 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Emergency Kill Switch - admin only */}
       {isAdmin && (
         <div className="px-3 py-2 border-t border-slate-700">
           <EmergencyKillSwitch />
         </div>
       )}
 
-      {/* Footer with user info */}
       <div className="px-4 py-3 border-t border-slate-700">
         {profile && (
           <div className="flex items-center gap-2 mb-2">
             <div className="w-7 h-7 bg-teal-600 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0">
-              {profile.nombre.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
+              {profile.nombre.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()}
             </div>
             <div className="min-w-0">
               <p className="text-xs font-medium text-slate-200 truncate">{profile.nombre}</p>
               <p className="text-[10px] text-slate-500 truncate">{profile.email}</p>
               {roles.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-0.5">
-                  {roles.map(r => {
+                  {roles.map((r: string) => {
                     const label = r === 'admin' ? 'Admin' : r === 'director' ? 'Director' : r === 'fisioterapeuta' ? 'Fisio' : r === 'psiconcologo' ? 'Psico' : r === 'nutricionista' ? 'Nutri' : r === 'entrenador' ? 'Entren.' : r
-                    return (
-                      <span key={r} className="text-[9px] bg-teal-500/20 text-teal-300 px-1.5 py-0.5 rounded font-medium">
-                        {label}
-                      </span>
-                    )
+                    return <span key={r} className="text-[9px] bg-teal-500/20 text-teal-300 px-1.5 py-0.5 rounded font-medium">{label}</span>
                   })}
                 </div>
               )}

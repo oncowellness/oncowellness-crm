@@ -5,12 +5,10 @@ import {
 } from 'recharts'
 import { Activity, TrendingUp, TrendingDown, Minus, Plus, CheckCircle, AlertTriangle, AlertCircle, Shield } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import { usePatient } from '@/hooks/usePatients'
+import { useClinicalTests, useCreateClinicalTest } from '@/hooks/useClinicalTests'
+import { useAuth } from '@/contexts/AuthContext'
 import { formatDate } from '../../lib/utils'
-import type { Patient, TransversoScore } from '../../types'
-
-interface Props {
-  patient?: Patient
-}
 
 function DeltaBadge({ current, baseline }: { current: number; baseline: number }) {
   const delta = current - baseline
@@ -19,313 +17,168 @@ function DeltaBadge({ current, baseline }: { current: number; baseline: number }
   return <span className="text-xs text-slate-400 flex items-center gap-0.5"><Minus size={12} />0</span>
 }
 
-function get30STSNormative(age: number, gender: 'M' | 'F'): number {
-  if (gender === 'F') {
-    if (age < 60) return 12
-    if (age < 65) return 12
-    if (age < 70) return 11
-    if (age < 75) return 10
-    if (age < 80) return 10
-    if (age < 85) return 9
-    return 8
-  } else {
-    if (age < 60) return 14
-    if (age < 65) return 14
-    if (age < 70) return 12
-    if (age < 75) return 12
-    if (age < 80) return 11
-    if (age < 85) return 10
-    return 8
-  }
-}
-
-const TRANSVERSO_LABELS: Record<TransversoScore, string> = {
-  0: 'Nula', 1: 'Pobre', 2: 'Moderada', 3: 'Correcta',
-}
-
-const TRANSVERSO_COLORS: Record<TransversoScore, string> = {
-  0: 'text-red-600 bg-red-50 border-red-200',
-  1: 'text-orange-600 bg-orange-50 border-orange-200',
-  2: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-  3: 'text-green-600 bg-green-50 border-green-200',
-}
-
-export function PhysioModule({ patient: propPatient }: Props) {
-  const { patients, selectedPatientId, addHandgrip, addSixMWT, addThirtySTS, addTUG, addTransverso, addBalance } = useStore()
-
-  const patient = propPatient ?? patients.find(p => p.id === selectedPatientId) ?? patients[0]
+export function PhysioModule() {
+  const { selectedPatientId } = useStore()
+  const { data: patient } = usePatient(selectedPatientId)
+  const { data: clinicalTests = [] } = useClinicalTests(selectedPatientId)
+  const createTest = useCreateClinicalTest()
+  const { user } = useAuth()
 
   const [showHandgripForm, setShowHandgripForm] = useState(false)
   const [showSixMWTForm, setShowSixMWTForm] = useState(false)
   const [showSTSForm, setShowSTSForm] = useState(false)
   const [showTUGForm, setShowTUGForm] = useState(false)
-  const [showTransversoForm, setShowTransversoForm] = useState(false)
-  const [showBalanceForm, setShowBalanceForm] = useState(false)
 
-  // Handgrip form state
   const [hgDom, setHgDom] = useState('')
   const [hgNonDom, setHgNonDom] = useState('')
   const [hgDate, setHgDate] = useState(new Date().toISOString().split('T')[0])
 
-  // 6MWT form state
   const [mwtDist, setMwtDist] = useState('')
   const [mwtHR, setMwtHR] = useState('')
   const [mwtFatigue, setMwtFatigue] = useState('')
   const [mwtDate, setMwtDate] = useState(new Date().toISOString().split('T')[0])
 
-  // 30STS form state
   const [stsReps, setStsReps] = useState('')
   const [stsDate, setStsDate] = useState(new Date().toISOString().split('T')[0])
   const [stsBaseline, setStsBaseline] = useState(false)
 
-  // TUG form state
   const [tugSecs, setTugSecs] = useState('')
   const [tugDate, setTugDate] = useState(new Date().toISOString().split('T')[0])
   const [tugBaseline, setTugBaseline] = useState(false)
 
-  // Transverso form state
-  const [transScore, setTransScore] = useState<TransversoScore>(2)
-  const [transDate, setTransDate] = useState(new Date().toISOString().split('T')[0])
-
-  // Balance form state
-  const [balSecs, setBalSecs] = useState('')
-  const [balDate, setBalDate] = useState(new Date().toISOString().split('T')[0])
-  const [balType, setBalType] = useState<'monopodal' | 'romberg'>('monopodal')
-  const [balBaseline, setBalBaseline] = useState(false)
-
   if (!patient) return <div className="p-6 text-slate-400">Selecciona un paciente</div>
 
-  const baselineHandgrip = patient.handgrip.find(h => h.isBaseline)
-  const latestHandgrip = patient.handgrip[patient.handgrip.length - 1]
-  const baselineSixMWT = patient.sixMWT.find(s => s.isBaseline)
-  const latestSixMWT = patient.sixMWT[patient.sixMWT.length - 1]
-  const latestSTS = patient.thirtySTS[patient.thirtySTS.length - 1]
-  const baselineSTS = patient.thirtySTS.find(s => s.isBaseline)
-  const latestTUG = patient.tug[patient.tug.length - 1]
-  const latestTransverso = patient.transverso[patient.transverso.length - 1]
-  const latestBalance = patient.balance[patient.balance.length - 1]
-  const baselineBalance = patient.balance.find(b => b.isBaseline)
+  // Group tests by type
+  const handgripTests = clinicalTests.filter(t => t.tipo === 'Handgrip')
+  const sixMWTTests = clinicalTests.filter(t => t.tipo === '6MWT')
+  const stsTests = clinicalTests.filter(t => t.tipo === '30STS')
+  const tugTests = clinicalTests.filter(t => t.tipo === 'TUG')
 
-  const normative30STS = get30STSNormative(patient.age, patient.gender)
+  const latestHandgrip = handgripTests[handgripTests.length - 1]
+  const baselineHandgrip = handgripTests.find(h => h.is_baseline)
+  const latestSixMWT = sixMWTTests[sixMWTTests.length - 1]
+  const baselineSixMWT = sixMWTTests.find(s => s.is_baseline)
+  const latestSTS = stsTests[stsTests.length - 1]
+  const latestTUG = tugTests[tugTests.length - 1]
+
+  const getVal = (t: any) => t?.valor_numerico ?? 0
+  const getJson = (t: any) => (t?.valores_json ?? {}) as any
 
   // Radar data
-  const currentHandgrip = latestHandgrip ? Math.min(100, (latestHandgrip.dominantHand / 50) * 100) : 0
-  const basalHandgrip = baselineHandgrip ? Math.min(100, (baselineHandgrip.dominantHand / 50) * 100) : 0
-  const currentResistencia = latestSixMWT ? Math.min(100, (latestSixMWT.distanceMeters / 600) * 100) : 0
-  const basalResistencia = baselineSixMWT ? Math.min(100, (baselineSixMWT.distanceMeters / 600) * 100) : 0
-  const currentAgilidad = latestTUG ? Math.max(0, ((20 - latestTUG.seconds) / 15) * 100) : 0
-  const basalTUG = patient.tug.find(t => t.isBaseline)
-  const basalAgilidad = basalTUG ? Math.max(0, ((20 - basalTUG.seconds) / 15) * 100) : 0
-  const currentFuerzaMMII = latestSTS ? Math.min(100, (latestSTS.reps / 20) * 100) : 0
-  const basalFuerzaMMII = baselineSTS ? Math.min(100, (baselineSTS.reps / 20) * 100) : 0
-  const currentEquilibrio = latestBalance ? Math.min(100, (latestBalance.seconds / 30) * 100) : 0
-  const basalEquilibrio = baselineBalance ? Math.min(100, (baselineBalance.seconds / 30) * 100) : 0
-
   const radarData = [
-    { domain: 'Fuerza', actual: Math.round(currentHandgrip), basal: Math.round(basalHandgrip) },
-    { domain: 'Resistencia', actual: Math.round(currentResistencia), basal: Math.round(basalResistencia) },
-    { domain: 'Agilidad', actual: Math.round(currentAgilidad), basal: Math.round(basalAgilidad) },
-    { domain: 'Fuerza MMII', actual: Math.round(currentFuerzaMMII), basal: Math.round(basalFuerzaMMII) },
-    { domain: 'Equilibrio', actual: Math.round(currentEquilibrio), basal: Math.round(basalEquilibrio) },
+    { domain: 'Fuerza', actual: latestHandgrip ? Math.min(100, (getVal(latestHandgrip) / 50) * 100) : 0, basal: baselineHandgrip ? Math.min(100, (getVal(baselineHandgrip) / 50) * 100) : 0 },
+    { domain: 'Resistencia', actual: latestSixMWT ? Math.min(100, (getVal(latestSixMWT) / 600) * 100) : 0, basal: baselineSixMWT ? Math.min(100, (getVal(baselineSixMWT) / 600) * 100) : 0 },
+    { domain: 'Fuerza MMII', actual: latestSTS ? Math.min(100, (getVal(latestSTS) / 20) * 100) : 0, basal: 0 },
+    { domain: 'Agilidad', actual: latestTUG ? Math.max(0, ((20 - getVal(latestTUG)) / 15) * 100) : 0, basal: 0 },
   ]
 
-  // Chart data
-  const handgripData = patient.handgrip.map(h => ({
-    date: formatDate(h.date),
-    Dominante: h.dominantHand,
-    'No Dominante': h.nonDominantHand,
-    isBaseline: h.isBaseline,
+  const handgripData = handgripTests.map(h => ({
+    date: formatDate(h.created_at),
+    Dominante: getVal(h),
+    'No Dominante': getJson(h).nonDominantHand ?? 0,
   }))
 
-  const sixMWTData = patient.sixMWT.map(s => ({
-    date: formatDate(s.date),
-    'Distancia (m)': s.distanceMeters,
-    'FC Pico': s.heartRatePeak ?? 0,
-    'Fatiga Borg': (s.fatigue ?? 0) * 10,
-    isBaseline: s.isBaseline,
+  const sixMWTData = sixMWTTests.map(s => ({
+    date: formatDate(s.created_at),
+    'Distancia (m)': getVal(s),
   }))
 
   function submitHandgrip() {
-    if (!hgDom || !hgNonDom) return
-    addHandgrip(patient.id, {
-      date: hgDate,
-      dominantHand: parseFloat(hgDom),
-      nonDominantHand: parseFloat(hgNonDom),
+    if (!hgDom || !hgNonDom || !selectedPatientId) return
+    createTest.mutate({
+      patient_id: selectedPatientId,
+      tipo: 'Handgrip',
+      valor_numerico: parseFloat(hgDom),
+      valores_json: { nonDominantHand: parseFloat(hgNonDom), date: hgDate },
+      is_baseline: handgripTests.length === 0,
+      staff_id: user?.id ?? null,
     })
-    setShowHandgripForm(false)
-    setHgDom(''); setHgNonDom('')
+    setShowHandgripForm(false); setHgDom(''); setHgNonDom('')
   }
 
   function submitSixMWT() {
-    if (!mwtDist) return
-    addSixMWT(patient.id, {
-      date: mwtDate,
-      distanceMeters: parseInt(mwtDist),
-      heartRatePeak: mwtHR ? parseInt(mwtHR) : undefined,
-      fatigue: mwtFatigue ? parseInt(mwtFatigue) : undefined,
+    if (!mwtDist || !selectedPatientId) return
+    createTest.mutate({
+      patient_id: selectedPatientId,
+      tipo: '6MWT',
+      valor_numerico: parseInt(mwtDist),
+      valores_json: { heartRatePeak: mwtHR ? parseInt(mwtHR) : null, fatigue: mwtFatigue ? parseInt(mwtFatigue) : null, date: mwtDate },
+      is_baseline: sixMWTTests.length === 0,
+      staff_id: user?.id ?? null,
     })
-    setShowSixMWTForm(false)
-    setMwtDist(''); setMwtHR(''); setMwtFatigue('')
+    setShowSixMWTForm(false); setMwtDist(''); setMwtHR(''); setMwtFatigue('')
   }
 
   function submitSTS() {
-    if (!stsReps) return
-    addThirtySTS(patient.id, {
-      date: stsDate,
-      reps: parseInt(stsReps),
-      isBaseline: stsBaseline || undefined,
+    if (!stsReps || !selectedPatientId) return
+    createTest.mutate({
+      patient_id: selectedPatientId,
+      tipo: '30STS',
+      valor_numerico: parseInt(stsReps),
+      valores_json: { date: stsDate },
+      is_baseline: stsBaseline || stsTests.length === 0,
+      staff_id: user?.id ?? null,
     })
-    setShowSTSForm(false)
-    setStsReps(''); setStsBaseline(false)
+    setShowSTSForm(false); setStsReps(''); setStsBaseline(false)
   }
 
   function submitTUG() {
-    if (!tugSecs) return
-    addTUG(patient.id, {
-      date: tugDate,
-      seconds: parseFloat(tugSecs),
-      isBaseline: tugBaseline || undefined,
+    if (!tugSecs || !selectedPatientId) return
+    createTest.mutate({
+      patient_id: selectedPatientId,
+      tipo: 'TUG',
+      valor_numerico: parseFloat(tugSecs),
+      valores_json: { date: tugDate },
+      is_baseline: tugBaseline || tugTests.length === 0,
+      staff_id: user?.id ?? null,
     })
-    setShowTUGForm(false)
-    setTugSecs(''); setTugBaseline(false)
+    setShowTUGForm(false); setTugSecs(''); setTugBaseline(false)
   }
 
-  function submitTransverso() {
-    addTransverso(patient.id, {
-      date: transDate,
-      score: transScore,
-    })
-    setShowTransversoForm(false)
-  }
-
-  function submitBalance() {
-    if (!balSecs) return
-    addBalance(patient.id, {
-      date: balDate,
-      seconds: parseFloat(balSecs),
-      testType: balType,
-      isBaseline: balBaseline || undefined,
-    })
-    setShowBalanceForm(false)
-    setBalSecs(''); setBalBaseline(false)
-  }
-
-  const tugAlert = latestTUG && latestTUG.seconds > 12
-  const stsAlert = latestSTS && latestSTS.reps < normative30STS
-  const transversoAlert = latestTransverso && latestTransverso.score === 0
+  const tugAlert = latestTUG && getVal(latestTUG) > 12
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Activity size={18} className="text-blue-600" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold text-slate-800">Dashboard de Recuperación Funcional</h2>
-            <p className="text-xs text-slate-500">Paciente: {patient.name}</p>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+          <Activity size={18} className="text-blue-600" />
+        </div>
+        <div>
+          <h2 className="text-base font-bold text-slate-800">Dashboard de Recuperación Funcional</h2>
+          <p className="text-xs text-slate-500">Paciente: {patient.nombre}</p>
         </div>
       </div>
 
-      {/* Clinical alerts */}
-      {(tugAlert || stsAlert || transversoAlert) && (
-        <div className="space-y-2">
-          {tugAlert && (
-            <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-              <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
-              <p className="text-sm text-red-700">
-                <span className="font-semibold">Alto Riesgo de Caída</span> — TUG {latestTUG.seconds}s &gt; 12s. Se recomienda derivación a FX-05.
-              </p>
-            </div>
-          )}
-          {stsAlert && (
-            <div className="flex items-start gap-3 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3">
-              <AlertTriangle size={16} className="text-orange-600 mt-0.5 shrink-0" />
-              <p className="text-sm text-orange-700">
-                <span className="font-semibold">Posible Sarcopenia</span> — {latestSTS.reps} reps &lt; valor normativo ({normative30STS}). Revisar con NU-01.
-              </p>
-            </div>
-          )}
-          {transversoAlert && (
-            <div className="flex items-start gap-3 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
-              <Shield size={16} className="text-yellow-600 mt-0.5 shrink-0" />
-              <p className="text-sm text-yellow-700">
-                <span className="font-semibold">Precaución en ejercicios de alta carga</span> — Activación del Transverso: Nula. Riesgo de hernia o diástasis.
-              </p>
-            </div>
-          )}
+      {tugAlert && (
+        <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
+          <p className="text-sm text-red-700"><span className="font-semibold">Alto Riesgo de Caída</span> — TUG {getVal(latestTUG)}s &gt; 12s.</p>
         </div>
       )}
 
-      {/* KPI cards — Row 1 */}
+      {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">Handgrip Basal (dom.)</p>
-          <p className="text-2xl font-bold text-blue-600">{baselineHandgrip ? `${baselineHandgrip.dominantHand} kg` : 'N/D'}</p>
-          <p className="text-xs text-slate-400 mt-1">Valor de referencia</p>
+          <p className="text-xs text-slate-500 mb-1">Handgrip Basal</p>
+          <p className="text-2xl font-bold text-blue-600">{baselineHandgrip ? `${getVal(baselineHandgrip)} kg` : 'N/D'}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">Handgrip Actual (dom.)</p>
-          <p className="text-2xl font-bold text-slate-800">{latestHandgrip ? `${latestHandgrip.dominantHand} kg` : 'N/D'}</p>
-          {baselineHandgrip && latestHandgrip && latestHandgrip !== baselineHandgrip && (
-            <DeltaBadge current={latestHandgrip.dominantHand} baseline={baselineHandgrip.dominantHand} />
-          )}
+          <p className="text-xs text-slate-500 mb-1">Handgrip Actual</p>
+          <p className="text-2xl font-bold text-slate-800">{latestHandgrip ? `${getVal(latestHandgrip)} kg` : 'N/D'}</p>
+          {baselineHandgrip && latestHandgrip && latestHandgrip !== baselineHandgrip && <DeltaBadge current={getVal(latestHandgrip)} baseline={getVal(baselineHandgrip)} />}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <p className="text-xs text-slate-500 mb-1">6MWT Basal</p>
-          <p className="text-2xl font-bold text-blue-600">{baselineSixMWT ? `${baselineSixMWT.distanceMeters} m` : 'N/D'}</p>
-          <p className="text-xs text-slate-400 mt-1">Valor de referencia</p>
+          <p className="text-2xl font-bold text-blue-600">{baselineSixMWT ? `${getVal(baselineSixMWT)} m` : 'N/D'}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <p className="text-xs text-slate-500 mb-1">6MWT Actual</p>
-          <p className="text-2xl font-bold text-slate-800">{latestSixMWT ? `${latestSixMWT.distanceMeters} m` : 'N/D'}</p>
-          {baselineSixMWT && latestSixMWT && latestSixMWT !== baselineSixMWT && (
-            <DeltaBadge current={latestSixMWT.distanceMeters} baseline={baselineSixMWT.distanceMeters} />
-          )}
+          <p className="text-2xl font-bold text-slate-800">{latestSixMWT ? `${getVal(latestSixMWT)} m` : 'N/D'}</p>
+          {baselineSixMWT && latestSixMWT && latestSixMWT !== baselineSixMWT && <DeltaBadge current={getVal(latestSixMWT)} baseline={getVal(baselineSixMWT)} />}
         </div>
       </div>
 
-      {/* KPI cards — Row 2 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">30STS Actual</p>
-          <p className={`text-2xl font-bold ${stsAlert ? 'text-orange-600' : 'text-slate-800'}`}>
-            {latestSTS ? `${latestSTS.reps} reps` : 'N/D'}
-          </p>
-          {latestSTS && (
-            <p className="text-xs text-slate-400 mt-1">Normativo: ≥{normative30STS} reps</p>
-          )}
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">TUG Actual</p>
-          <p className={`text-2xl font-bold ${tugAlert ? 'text-red-600' : 'text-slate-800'}`}>
-            {latestTUG ? `${latestTUG.seconds}s` : 'N/D'}
-          </p>
-          {latestTUG && (
-            <p className="text-xs text-slate-400 mt-1">{tugAlert ? 'Riesgo de caída' : 'Dentro del rango'}</p>
-          )}
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">Transverso</p>
-          {latestTransverso ? (
-            <span className={`inline-block text-sm font-semibold px-2 py-1 rounded-lg border mt-1 ${TRANSVERSO_COLORS[latestTransverso.score]}`}>
-              {TRANSVERSO_LABELS[latestTransverso.score]}
-            </span>
-          ) : (
-            <p className="text-2xl font-bold text-slate-800">N/D</p>
-          )}
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">Equilibrio Actual</p>
-          <p className="text-2xl font-bold text-slate-800">{latestBalance ? `${latestBalance.seconds}s` : 'N/D'}</p>
-          {latestBalance && baselineBalance && latestBalance !== baselineBalance && (
-            <DeltaBadge current={latestBalance.seconds} baseline={baselineBalance.seconds} />
-          )}
-        </div>
-      </div>
-
-      {/* Radar chart */}
+      {/* Radar */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <h3 className="text-sm font-semibold text-slate-700 mb-4">Perfil Funcional Integral</h3>
         <ResponsiveContainer width="100%" height={280}>
@@ -343,38 +196,18 @@ export function PhysioModule({ patient: propPatient }: Props) {
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-slate-700">Evolución Fuerza de Prensión (Handgrip)</h3>
-          <button
-            onClick={() => setShowHandgripForm(!showHandgripForm)}
-            className="flex items-center gap-1.5 text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg"
-          >
+          <button onClick={() => setShowHandgripForm(!showHandgripForm)} className="flex items-center gap-1.5 text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg">
             <Plus size={12} /> Registrar
           </button>
         </div>
-
         {showHandgripForm && (
           <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100 flex items-end gap-3 flex-wrap">
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Fecha</label>
-              <input type="date" value={hgDate} onChange={e => setHgDate(e.target.value)}
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Mano Dominante (kg) *</label>
-              <input type="number" step="0.1" value={hgDom} onChange={e => setHgDom(e.target.value)} placeholder="0.0"
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-28 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Mano No Dominante (kg) *</label>
-              <input type="number" step="0.1" value={hgNonDom} onChange={e => setHgNonDom(e.target.value)} placeholder="0.0"
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-28 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-            </div>
-            <button onClick={submitHandgrip}
-              className="flex items-center gap-1.5 text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700">
-              <CheckCircle size={14} /> Guardar
-            </button>
+            <div><label className="text-xs text-slate-600 block mb-1">Fecha</label><input type="date" value={hgDate} onChange={e => setHgDate(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400" /></div>
+            <div><label className="text-xs text-slate-600 block mb-1">Dominante (kg) *</label><input type="number" step="0.1" value={hgDom} onChange={e => setHgDom(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-28 focus:outline-none focus:ring-2 focus:ring-blue-400" /></div>
+            <div><label className="text-xs text-slate-600 block mb-1">No Dominante (kg) *</label><input type="number" step="0.1" value={hgNonDom} onChange={e => setHgNonDom(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-28 focus:outline-none focus:ring-2 focus:ring-blue-400" /></div>
+            <button onClick={submitHandgrip} disabled={createTest.isPending} className="flex items-center gap-1.5 text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-60"><CheckCircle size={14} /> Guardar</button>
           </div>
         )}
-
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={handgripData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -382,10 +215,6 @@ export function PhysioModule({ patient: propPatient }: Props) {
             <YAxis tick={{ fontSize: 11 }} unit=" kg" />
             <Tooltip />
             <Legend />
-            {baselineHandgrip && (
-              <ReferenceLine y={baselineHandgrip.dominantHand} stroke="#93c5fd" strokeDasharray="4 4"
-                label={{ value: 'Basal', fill: '#93c5fd', fontSize: 10 }} />
-            )}
             <Line type="monotone" dataKey="Dominante" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6', r: 4 }} />
             <Line type="monotone" dataKey="No Dominante" stroke="#93c5fd" strokeWidth={2} dot={{ fill: '#93c5fd', r: 4 }} />
           </LineChart>
@@ -396,377 +225,75 @@ export function PhysioModule({ patient: propPatient }: Props) {
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-slate-700">Evolución Test de Marcha (6MWT)</h3>
-          <button
-            onClick={() => setShowSixMWTForm(!showSixMWTForm)}
-            className="flex items-center gap-1.5 text-xs bg-teal-50 text-teal-600 hover:bg-teal-100 px-3 py-1.5 rounded-lg"
-          >
+          <button onClick={() => setShowSixMWTForm(!showSixMWTForm)} className="flex items-center gap-1.5 text-xs bg-teal-50 text-teal-600 hover:bg-teal-100 px-3 py-1.5 rounded-lg">
             <Plus size={12} /> Registrar
           </button>
         </div>
-
         {showSixMWTForm && (
           <div className="mb-4 p-4 bg-teal-50 rounded-lg border border-teal-100 flex items-end gap-3 flex-wrap">
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Fecha</label>
-              <input type="date" value={mwtDate} onChange={e => setMwtDate(e.target.value)}
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-400" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Distancia (m) *</label>
-              <input type="number" value={mwtDist} onChange={e => setMwtDist(e.target.value)} placeholder="0"
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-teal-400" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">FC Pico (bpm)</label>
-              <input type="number" value={mwtHR} onChange={e => setMwtHR(e.target.value)} placeholder="0"
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-teal-400" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Fatiga Borg (0–10)</label>
-              <input type="number" min="0" max="10" value={mwtFatigue} onChange={e => setMwtFatigue(e.target.value)} placeholder="0"
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-teal-400" />
-            </div>
-            <button onClick={submitSixMWT}
-              className="flex items-center gap-1.5 text-sm bg-teal-600 text-white px-4 py-1.5 rounded-lg hover:bg-teal-700">
-              <CheckCircle size={14} /> Guardar
-            </button>
+            <div><label className="text-xs text-slate-600 block mb-1">Fecha</label><input type="date" value={mwtDate} onChange={e => setMwtDate(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-400" /></div>
+            <div><label className="text-xs text-slate-600 block mb-1">Distancia (m) *</label><input type="number" value={mwtDist} onChange={e => setMwtDist(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-teal-400" /></div>
+            <div><label className="text-xs text-slate-600 block mb-1">FC Pico</label><input type="number" value={mwtHR} onChange={e => setMwtHR(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-teal-400" /></div>
+            <button onClick={submitSixMWT} disabled={createTest.isPending} className="flex items-center gap-1.5 text-sm bg-teal-600 text-white px-4 py-1.5 rounded-lg hover:bg-teal-700 disabled:opacity-60"><CheckCircle size={14} /> Guardar</button>
           </div>
         )}
-
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={sixMWTData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="date" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip />
-            <Legend />
-            {baselineSixMWT && (
-              <ReferenceLine y={baselineSixMWT.distanceMeters} stroke="#6ee7b7" strokeDasharray="4 4"
-                label={{ value: 'Basal', fill: '#6ee7b7', fontSize: 10 }} />
-            )}
             <Line type="monotone" dataKey="Distancia (m)" stroke="#14b8a6" strokeWidth={2} dot={{ fill: '#14b8a6', r: 4 }} />
-            <Line type="monotone" dataKey="FC Pico" stroke="#f97316" strokeWidth={1.5} strokeDasharray="4 4" dot={{ fill: '#f97316', r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
-
-        {/* History table */}
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left text-slate-500 py-2 pr-4">Fecha</th>
-                <th className="text-left text-slate-500 py-2 pr-4">Distancia</th>
-                <th className="text-left text-slate-500 py-2 pr-4">FC Pico</th>
-                <th className="text-left text-slate-500 py-2 pr-4">Borg</th>
-                <th className="text-left text-slate-500 py-2">Δ vs Basal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {patient.sixMWT.map((s, i) => (
-                <tr key={i} className="border-b border-slate-50 last:border-0">
-                  <td className="py-1.5 pr-4 text-slate-600">{formatDate(s.date)}</td>
-                  <td className="py-1.5 pr-4 font-medium text-slate-800">{s.distanceMeters} m</td>
-                  <td className="py-1.5 pr-4 text-slate-600">{s.heartRatePeak ?? '—'} bpm</td>
-                  <td className="py-1.5 pr-4 text-slate-600">{s.fatigue ?? '—'}</td>
-                  <td className="py-1.5">
-                    {s.isBaseline ? (
-                      <span className="text-blue-500 font-medium">Basal</span>
-                    ) : baselineSixMWT ? (
-                      <DeltaBadge current={s.distanceMeters} baseline={baselineSixMWT.distanceMeters} />
-                    ) : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
 
       {/* 30STS */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-700">Test de Levantarse y Sentarse 30s (30STS)</h3>
-          <button
-            onClick={() => setShowSTSForm(!showSTSForm)}
-            className="flex items-center gap-1.5 text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-1.5 rounded-lg"
-          >
-            <Plus size={12} /> Registrar
-          </button>
+          <h3 className="text-sm font-semibold text-slate-700">Test 30STS</h3>
+          <button onClick={() => setShowSTSForm(!showSTSForm)} className="flex items-center gap-1.5 text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-1.5 rounded-lg"><Plus size={12} /> Registrar</button>
         </div>
-
         {showSTSForm && (
           <div className="mb-4 p-4 bg-purple-50 rounded-lg border border-purple-100 flex items-end gap-3 flex-wrap">
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Fecha</label>
-              <input type="date" value={stsDate} onChange={e => setStsDate(e.target.value)}
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-400" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Repeticiones *</label>
-              <input type="number" value={stsReps} onChange={e => setStsReps(e.target.value)} placeholder="0"
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-purple-400" />
-            </div>
-            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
-              <input type="checkbox" checked={stsBaseline} onChange={e => setStsBaseline(e.target.checked)} className="rounded" />
-              Basal
-            </label>
-            <button onClick={submitSTS}
-              className="flex items-center gap-1.5 text-sm bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-700">
-              <CheckCircle size={14} /> Guardar
-            </button>
+            <div><label className="text-xs text-slate-600 block mb-1">Fecha</label><input type="date" value={stsDate} onChange={e => setStsDate(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-400" /></div>
+            <div><label className="text-xs text-slate-600 block mb-1">Repeticiones *</label><input type="number" value={stsReps} onChange={e => setStsReps(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-purple-400" /></div>
+            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer"><input type="checkbox" checked={stsBaseline} onChange={e => setStsBaseline(e.target.checked)} className="rounded" />Basal</label>
+            <button onClick={submitSTS} disabled={createTest.isPending} className="flex items-center gap-1.5 text-sm bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-700 disabled:opacity-60"><CheckCircle size={14} /> Guardar</button>
           </div>
         )}
-
-        {patient.thirtySTS.length > 0 ? (
+        {stsTests.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left text-slate-500 py-2 pr-4">Fecha</th>
-                  <th className="text-left text-slate-500 py-2 pr-4">Reps</th>
-                  <th className="text-left text-slate-500 py-2 pr-4">Normativo</th>
-                  <th className="text-left text-slate-500 py-2">Δ vs Basal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patient.thirtySTS.map((s, i) => (
-                  <tr key={i} className="border-b border-slate-50 last:border-0">
-                    <td className="py-1.5 pr-4 text-slate-600">{formatDate(s.date)}</td>
-                    <td className="py-1.5 pr-4 font-medium text-slate-800">{s.reps}</td>
-                    <td className="py-1.5 pr-4">
-                      <span className={`text-xs font-medium ${s.reps >= normative30STS ? 'text-green-600' : 'text-orange-600'}`}>
-                        {s.reps >= normative30STS ? '✓' : '↓'} ≥{normative30STS}
-                      </span>
-                    </td>
-                    <td className="py-1.5">
-                      {s.isBaseline ? (
-                        <span className="text-purple-500 font-medium">Basal</span>
-                      ) : baselineSTS ? (
-                        <DeltaBadge current={s.reps} baseline={baselineSTS.reps} />
-                      ) : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              <thead><tr className="border-b border-slate-100"><th className="text-left text-slate-500 py-2 pr-4">Fecha</th><th className="text-left text-slate-500 py-2">Reps</th></tr></thead>
+              <tbody>{stsTests.map(s => <tr key={s.id} className="border-b border-slate-50"><td className="py-1.5 pr-4 text-slate-600">{formatDate(s.created_at)}</td><td className="py-1.5 font-medium text-slate-800">{s.valor_numerico}</td></tr>)}</tbody>
             </table>
           </div>
-        ) : (
-          <p className="text-xs text-slate-400">Sin registros. Registra el primer test.</p>
-        )}
+        ) : <p className="text-xs text-slate-400">Sin registros.</p>}
       </div>
 
       {/* TUG */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-slate-700">Timed Up and Go (TUG)</h3>
-          <button
-            onClick={() => setShowTUGForm(!showTUGForm)}
-            className="flex items-center gap-1.5 text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-lg"
-          >
-            <Plus size={12} /> Registrar
-          </button>
+          <button onClick={() => setShowTUGForm(!showTUGForm)} className="flex items-center gap-1.5 text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-lg"><Plus size={12} /> Registrar</button>
         </div>
-
         {showTUGForm && (
           <div className="mb-4 p-4 bg-orange-50 rounded-lg border border-orange-100 flex items-end gap-3 flex-wrap">
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Fecha</label>
-              <input type="date" value={tugDate} onChange={e => setTugDate(e.target.value)}
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-400" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Tiempo (s) *</label>
-              <input type="number" step="0.1" value={tugSecs} onChange={e => setTugSecs(e.target.value)} placeholder="0.0"
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-orange-400" />
-            </div>
-            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
-              <input type="checkbox" checked={tugBaseline} onChange={e => setTugBaseline(e.target.checked)} className="rounded" />
-              Basal
-            </label>
-            <button onClick={submitTUG}
-              className="flex items-center gap-1.5 text-sm bg-orange-600 text-white px-4 py-1.5 rounded-lg hover:bg-orange-700">
-              <CheckCircle size={14} /> Guardar
-            </button>
+            <div><label className="text-xs text-slate-600 block mb-1">Fecha</label><input type="date" value={tugDate} onChange={e => setTugDate(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-400" /></div>
+            <div><label className="text-xs text-slate-600 block mb-1">Tiempo (s) *</label><input type="number" step="0.1" value={tugSecs} onChange={e => setTugSecs(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-orange-400" /></div>
+            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer"><input type="checkbox" checked={tugBaseline} onChange={e => setTugBaseline(e.target.checked)} className="rounded" />Basal</label>
+            <button onClick={submitTUG} disabled={createTest.isPending} className="flex items-center gap-1.5 text-sm bg-orange-600 text-white px-4 py-1.5 rounded-lg hover:bg-orange-700 disabled:opacity-60"><CheckCircle size={14} /> Guardar</button>
           </div>
         )}
-
-        {patient.tug.length > 0 ? (
+        {tugTests.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left text-slate-500 py-2 pr-4">Fecha</th>
-                  <th className="text-left text-slate-500 py-2 pr-4">Tiempo</th>
-                  <th className="text-left text-slate-500 py-2 pr-4">Riesgo Caída</th>
-                  <th className="text-left text-slate-500 py-2">Δ vs Basal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patient.tug.map((t, i) => (
-                  <tr key={i} className="border-b border-slate-50 last:border-0">
-                    <td className="py-1.5 pr-4 text-slate-600">{formatDate(t.date)}</td>
-                    <td className={`py-1.5 pr-4 font-medium ${t.seconds > 12 ? 'text-red-600' : 'text-slate-800'}`}>{t.seconds}s</td>
-                    <td className="py-1.5 pr-4">
-                      <span className={`text-xs font-medium ${t.seconds > 12 ? 'text-red-600' : 'text-green-600'}`}>
-                        {t.seconds > 12 ? 'Alto' : 'Normal'}
-                      </span>
-                    </td>
-                    <td className="py-1.5">
-                      {t.isBaseline ? (
-                        <span className="text-orange-500 font-medium">Basal</span>
-                      ) : basalTUG ? (
-                        <DeltaBadge current={-t.seconds} baseline={-basalTUG.seconds} />
-                      ) : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              <thead><tr className="border-b border-slate-100"><th className="text-left text-slate-500 py-2 pr-4">Fecha</th><th className="text-left text-slate-500 py-2 pr-4">Tiempo</th><th className="text-left text-slate-500 py-2">Riesgo</th></tr></thead>
+              <tbody>{tugTests.map(t => <tr key={t.id} className="border-b border-slate-50"><td className="py-1.5 pr-4 text-slate-600">{formatDate(t.created_at)}</td><td className={`py-1.5 pr-4 font-medium ${(t.valor_numerico ?? 0) > 12 ? 'text-red-600' : 'text-slate-800'}`}>{t.valor_numerico}s</td><td className="py-1.5"><span className={`text-xs font-medium ${(t.valor_numerico ?? 0) > 12 ? 'text-red-600' : 'text-green-600'}`}>{(t.valor_numerico ?? 0) > 12 ? 'Alto' : 'Normal'}</span></td></tr>)}</tbody>
             </table>
           </div>
-        ) : (
-          <p className="text-xs text-slate-400">Sin registros. Registra el primer test.</p>
-        )}
-      </div>
-
-      {/* Transverso */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-700">Activación del Transverso</h3>
-          <button
-            onClick={() => setShowTransversoForm(!showTransversoForm)}
-            className="flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg"
-          >
-            <Plus size={12} /> Registrar
-          </button>
-        </div>
-
-        {showTransversoForm && (
-          <div className="mb-4 p-4 bg-indigo-50 rounded-lg border border-indigo-100 flex items-end gap-3 flex-wrap">
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Fecha</label>
-              <input type="date" value={transDate} onChange={e => setTransDate(e.target.value)}
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Activación</label>
-              <select value={transScore} onChange={e => setTransScore(parseInt(e.target.value) as TransversoScore)}
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                <option value={0}>0 – Nula</option>
-                <option value={1}>1 – Pobre</option>
-                <option value={2}>2 – Moderada</option>
-                <option value={3}>3 – Correcta</option>
-              </select>
-            </div>
-            <button onClick={submitTransverso}
-              className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700">
-              <CheckCircle size={14} /> Guardar
-            </button>
-          </div>
-        )}
-
-        {patient.transverso.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left text-slate-500 py-2 pr-4">Fecha</th>
-                  <th className="text-left text-slate-500 py-2">Activación</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patient.transverso.map((t, i) => (
-                  <tr key={i} className="border-b border-slate-50 last:border-0">
-                    <td className="py-1.5 pr-4 text-slate-600">{formatDate(t.date)}</td>
-                    <td className="py-1.5">
-                      <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-lg border ${TRANSVERSO_COLORS[t.score]}`}>
-                        {t.score} – {TRANSVERSO_LABELS[t.score]}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-xs text-slate-400">Sin registros. Registra el primer test.</p>
-        )}
-      </div>
-
-      {/* Balance */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-700">Test de Equilibrio</h3>
-          <button
-            onClick={() => setShowBalanceForm(!showBalanceForm)}
-            className="flex items-center gap-1.5 text-xs bg-cyan-50 text-cyan-600 hover:bg-cyan-100 px-3 py-1.5 rounded-lg"
-          >
-            <Plus size={12} /> Registrar
-          </button>
-        </div>
-
-        {showBalanceForm && (
-          <div className="mb-4 p-4 bg-cyan-50 rounded-lg border border-cyan-100 flex items-end gap-3 flex-wrap">
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Fecha</label>
-              <input type="date" value={balDate} onChange={e => setBalDate(e.target.value)}
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Test</label>
-              <select value={balType} onChange={e => setBalType(e.target.value as 'monopodal' | 'romberg')}
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-400">
-                <option value="monopodal">Monopodal</option>
-                <option value="romberg">Romberg</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Segundos *</label>
-              <input type="number" step="0.1" value={balSecs} onChange={e => setBalSecs(e.target.value)} placeholder="0.0"
-                className="text-sm border border-slate-200 rounded-lg px-2 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
-            </div>
-            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
-              <input type="checkbox" checked={balBaseline} onChange={e => setBalBaseline(e.target.checked)} className="rounded" />
-              Basal
-            </label>
-            <button onClick={submitBalance}
-              className="flex items-center gap-1.5 text-sm bg-cyan-600 text-white px-4 py-1.5 rounded-lg hover:bg-cyan-700">
-              <CheckCircle size={14} /> Guardar
-            </button>
-          </div>
-        )}
-
-        {patient.balance.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left text-slate-500 py-2 pr-4">Fecha</th>
-                  <th className="text-left text-slate-500 py-2 pr-4">Test</th>
-                  <th className="text-left text-slate-500 py-2 pr-4">Segundos</th>
-                  <th className="text-left text-slate-500 py-2">Δ vs Basal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patient.balance.map((b, i) => (
-                  <tr key={i} className="border-b border-slate-50 last:border-0">
-                    <td className="py-1.5 pr-4 text-slate-600">{formatDate(b.date)}</td>
-                    <td className="py-1.5 pr-4 text-slate-600 capitalize">{b.testType}</td>
-                    <td className="py-1.5 pr-4 font-medium text-slate-800">{b.seconds}s</td>
-                    <td className="py-1.5">
-                      {b.isBaseline ? (
-                        <span className="text-cyan-500 font-medium">Basal</span>
-                      ) : baselineBalance ? (
-                        <DeltaBadge current={b.seconds} baseline={baselineBalance.seconds} />
-                      ) : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-xs text-slate-400">Sin registros. Registra el primer test.</p>
-        )}
+        ) : <p className="text-xs text-slate-400">Sin registros.</p>}
       </div>
     </div>
   )

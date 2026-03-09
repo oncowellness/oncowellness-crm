@@ -66,9 +66,33 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
   const [currentPhase, setCurrentPhase] = useState<Phase>('F1')
   const [mindState, setMindState] = useState<MindState>('Activo')
 
-  const step1Valid = name.trim().length > 0 && age.trim().length > 0
+  const validations = {
+    name: touched.name && !name.trim() ? 'El nombre es obligatorio' : undefined,
+    age: touched.age && (!age.trim() || parseInt(age) < 1 || parseInt(age) > 120) ? 'Edad entre 1 y 120' : undefined,
+    email: touched.email && email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'Email no válido' : undefined,
+    diagnosis: touched.diagnosis && !diagnosis.trim() ? 'El diagnóstico es obligatorio' : undefined,
+    cancerType: touched.cancerType && !cancerType.trim() ? 'Selecciona un tipo' : undefined,
+    oncologist: touched.oncologist && !oncologist.trim() ? 'El oncólogo es obligatorio' : undefined,
+  }
+
+  const step1Valid = name.trim().length > 0 && age.trim().length > 0 && parseInt(age) >= 1 && parseInt(age) <= 120 && (!email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
   const step2Valid = diagnosis.trim().length > 0 && cancerType.trim().length > 0 && oncologist.trim().length > 0
   const canNext = step === 1 ? step1Valid : step === 2 ? step2Valid : true
+
+  function markTouched(...fields: string[]) {
+    setTouched(t => { const n = { ...t }; fields.forEach(f => n[f] = true); return n })
+  }
+
+  function tryNext() {
+    if (step === 1) {
+      markTouched('name', 'age', 'email')
+      if (!step1Valid) return
+    } else if (step === 2) {
+      markTouched('diagnosis', 'cancerType', 'oncologist')
+      if (!step2Valid) return
+    }
+    setStep(s => (s + 1) as Step)
+  }
 
   function buildInsert() {
     return {
@@ -90,11 +114,15 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
   }
 
   async function handleSubmit() {
+    if (step === 1) markTouched('name', 'age', 'email')
+    if (!step1Valid) return
     try {
       const result = await createPatient.mutateAsync(buildInsert())
+      toast.success('Paciente creado correctamente')
       onCreated(result.id)
     } catch (e) {
       console.error('Error creating patient:', e)
+      toast.error('Error al crear el paciente')
     }
   }
 

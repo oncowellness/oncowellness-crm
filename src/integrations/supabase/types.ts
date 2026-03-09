@@ -299,6 +299,45 @@ export type Database = {
           },
         ]
       }
+      expenses: {
+        Row: {
+          amount: number
+          approved_by: string | null
+          category: Database["public"]["Enums"]["expense_category"]
+          created_at: string
+          description: string
+          expense_date: string
+          id: string
+          receipt_url: string | null
+          updated_at: string
+          vendor: string | null
+        }
+        Insert: {
+          amount: number
+          approved_by?: string | null
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          description: string
+          expense_date?: string
+          id?: string
+          receipt_url?: string | null
+          updated_at?: string
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_by?: string | null
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          description?: string
+          expense_date?: string
+          id?: string
+          receipt_url?: string | null
+          updated_at?: string
+          vendor?: string | null
+        }
+        Relationships: []
+      }
       incentives: {
         Row: {
           clinical_test_id: string | null
@@ -388,6 +427,120 @@ export type Database = {
           token?: string
         }
         Relationships: []
+      }
+      invoice_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          quantity: number
+          session_id: string | null
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          quantity?: number
+          session_id?: string | null
+          total?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          quantity?: number
+          session_id?: string | null
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          patient_id: string
+          status: Database["public"]["Enums"]["invoice_status"]
+          subscription_id: string | null
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          notes?: string | null
+          patient_id: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subscription_id?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          patient_id?: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subscription_id?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patient_assignments: {
         Row: {
@@ -535,6 +688,89 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          method: Database["public"]["Enums"]["payment_method"]
+          notes: string | null
+          payment_date: string
+          recorded_by: string | null
+          reference: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          payment_date?: string
+          recorded_by?: string | null
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          payment_date?: string
+          recorded_by?: string | null
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          active: boolean
+          billing_cycle: Database["public"]["Enums"]["plan_billing_cycle"]
+          created_at: string
+          description: string | null
+          id: string
+          max_sessions: number | null
+          name: string
+          price_annual: number | null
+          price_monthly: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          billing_cycle?: Database["public"]["Enums"]["plan_billing_cycle"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_sessions?: number | null
+          name: string
+          price_annual?: number | null
+          price_monthly?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          billing_cycle?: Database["public"]["Enums"]["plan_billing_cycle"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_sessions?: number | null
+          name?: string
+          price_annual?: number | null
+          price_monthly?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -663,6 +899,57 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          patient_id: string
+          plan_id: string
+          start_date: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          plan_id: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          plan_id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_governance: {
         Row: {
           emergency_lock_active: boolean
@@ -737,17 +1024,28 @@ export type Database = {
         | "director"
         | "entrenador"
         | "psiconcologo"
+      expense_category:
+        | "payroll"
+        | "equipment"
+        | "rent"
+        | "software"
+        | "marketing"
+        | "other"
       incentive_concept: "fijo" | "hito_clinico" | "video_rrss" | "bono_extra"
       incentive_status: "pendiente" | "aprobado" | "pagado"
+      invoice_status: "draft" | "sent" | "paid" | "overdue" | "cancelled"
       mind_state_enum:
         | "Activo"
         | "Ansioso"
         | "Depresivo"
         | "Resiliente"
         | "Vulnerable"
+      payment_method: "transfer" | "card" | "cash" | "other"
       phase_journey: "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7" | "F8"
+      plan_billing_cycle: "monthly" | "annual" | "one_time"
       program_type: "FX" | "PS" | "NU" | "EO" | "TS"
       session_status: "pendiente" | "confirmada" | "realizada" | "cancelada"
+      subscription_status: "active" | "paused" | "cancelled" | "expired"
       test_type:
         | "30STS"
         | "TUG"
@@ -898,8 +1196,17 @@ export const Constants = {
         "entrenador",
         "psiconcologo",
       ],
+      expense_category: [
+        "payroll",
+        "equipment",
+        "rent",
+        "software",
+        "marketing",
+        "other",
+      ],
       incentive_concept: ["fijo", "hito_clinico", "video_rrss", "bono_extra"],
       incentive_status: ["pendiente", "aprobado", "pagado"],
+      invoice_status: ["draft", "sent", "paid", "overdue", "cancelled"],
       mind_state_enum: [
         "Activo",
         "Ansioso",
@@ -907,9 +1214,12 @@ export const Constants = {
         "Resiliente",
         "Vulnerable",
       ],
+      payment_method: ["transfer", "card", "cash", "other"],
       phase_journey: ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8"],
+      plan_billing_cycle: ["monthly", "annual", "one_time"],
       program_type: ["FX", "PS", "NU", "EO", "TS"],
       session_status: ["pendiente", "confirmada", "realizada", "cancelada"],
+      subscription_status: ["active", "paused", "cancelled", "expired"],
       test_type: [
         "30STS",
         "TUG",

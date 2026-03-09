@@ -1,5 +1,5 @@
 import { CheckCircle, Circle, Clock } from 'lucide-react'
-import type { Patient, Phase } from '../../types'
+import type { Phase } from '../../types'
 import { PHASE_LABELS } from '../../types'
 import { cn } from '../../lib/utils'
 
@@ -28,71 +28,38 @@ const PHASE_COLORS: Record<Phase, { bg: string; text: string; ring: string; line
 }
 
 interface Props {
-  patient: Patient
+  currentPhase: Phase
+  mindState: string
 }
 
-export function JourneyTimeline({ patient }: Props) {
-  const currentIndex = PHASES.indexOf(patient.currentPhase)
+export function JourneyTimeline({ currentPhase, mindState }: Props) {
+  const currentIndex = PHASES.indexOf(currentPhase)
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">
       <h3 className="text-sm font-semibold text-slate-700 mb-5">Journey del Paciente (F1–F8)</h3>
-
-      {/* Horizontal timeline */}
       <div className="relative">
-        {/* Progress line background */}
         <div className="absolute top-5 left-5 right-5 h-0.5 bg-slate-200" />
-        {/* Progress line filled */}
-        <div
-          className="absolute top-5 left-5 h-0.5 bg-teal-500 transition-all duration-500"
-          style={{ width: `${(currentIndex / (PHASES.length - 1)) * 100}%` }}
-        />
-
-        {/* Phase nodes */}
+        <div className="absolute top-5 left-5 h-0.5 bg-teal-500 transition-all duration-500" style={{ width: `${(currentIndex / (PHASES.length - 1)) * 100}%` }} />
         <div className="relative flex justify-between">
           {PHASES.map((phase, index) => {
             const isCompleted = index < currentIndex
             const isCurrent = index === currentIndex
             const isFuture = index > currentIndex
             const colors = PHASE_COLORS[phase]
-
             return (
               <div key={phase} className="flex flex-col items-center gap-2" style={{ width: '12.5%' }}>
-                {/* Node */}
-                <div
-                  className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center z-10 ring-4',
-                    isCompleted && `${colors.bg} ring-white`,
-                    isCurrent && `${colors.bg} ring-4 ${colors.ring} shadow-lg scale-110`,
-                    isFuture && 'bg-white border-2 border-slate-200 ring-white'
-                  )}
-                >
-                  {isCompleted ? (
-                    <CheckCircle size={18} className="text-white" />
-                  ) : isCurrent ? (
-                    <span className="text-white text-xs font-bold">{phase}</span>
-                  ) : (
-                    <Circle size={16} className="text-slate-300" />
-                  )}
+                <div className={cn('w-10 h-10 rounded-full flex items-center justify-center z-10 ring-4',
+                  isCompleted && `${colors.bg} ring-white`,
+                  isCurrent && `${colors.bg} ring-4 ${colors.ring} shadow-lg scale-110`,
+                  isFuture && 'bg-white border-2 border-slate-200 ring-white'
+                )}>
+                  {isCompleted ? <CheckCircle size={18} className="text-white" /> : isCurrent ? <span className="text-white text-xs font-bold">{phase}</span> : <Circle size={16} className="text-slate-300" />}
                 </div>
-
-                {/* Label */}
                 <div className="text-center">
-                  <p className={cn(
-                    'text-xs font-semibold',
-                    isCurrent ? colors.text : isCompleted ? 'text-slate-500' : 'text-slate-300'
-                  )}>
-                    {phase}
-                  </p>
-                  <p className={cn(
-                    'text-[10px] leading-tight text-center hidden lg:block',
-                    isCurrent ? 'text-slate-600' : 'text-slate-400'
-                  )}>
-                    {PHASE_LABELS[phase]}
-                  </p>
+                  <p className={cn('text-xs font-semibold', isCurrent ? colors.text : isCompleted ? 'text-slate-500' : 'text-slate-300')}>{phase}</p>
+                  <p className={cn('text-[10px] leading-tight text-center hidden lg:block', isCurrent ? 'text-slate-600' : 'text-slate-400')}>{PHASE_LABELS[phase]}</p>
                 </div>
-
-                {/* Current indicator */}
                 {isCurrent && (
                   <div className="flex items-center gap-1">
                     <Clock size={10} className="text-teal-600" />
@@ -104,23 +71,15 @@ export function JourneyTimeline({ patient }: Props) {
           })}
         </div>
       </div>
-
-      {/* Current phase detail */}
-      <div className={cn(
-        'mt-5 p-3 rounded-lg border-l-4',
-        `border-l-${PHASE_COLORS[patient.currentPhase].bg.replace('bg-', '')}`,
-        'bg-slate-50'
-      )}>
+      <div className={cn('mt-5 p-3 rounded-lg border-l-4', 'bg-slate-50')}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-slate-700">
-              Fase actual: {patient.currentPhase} – {PHASE_LABELS[patient.currentPhase]}
-            </p>
-            <p className="text-xs text-slate-500 mt-0.5">{PHASE_DESCRIPTIONS[patient.currentPhase]}</p>
+            <p className="text-sm font-semibold text-slate-700">Fase actual: {currentPhase} – {PHASE_LABELS[currentPhase]}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{PHASE_DESCRIPTIONS[currentPhase]}</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-slate-500">Estado mental</p>
-            <p className="text-sm font-semibold text-slate-700">{patient.mindState}</p>
+            <p className="text-sm font-semibold text-slate-700">{mindState}</p>
           </div>
         </div>
       </div>

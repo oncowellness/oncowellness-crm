@@ -2,6 +2,9 @@ import {
   Users, AlertTriangle, Activity, Brain, Calendar,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import { usePatients } from '@/hooks/usePatients'
+import { useAllCrisisOrders } from '@/hooks/useAllCrisisOrders'
+import { useAllSessions } from '@/hooks/useSessions'
 import { PHASE_LABELS, type Phase } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
 
@@ -17,22 +20,23 @@ const PHASE_COLORS: Record<Phase, string> = {
 }
 
 export function MainDashboard() {
-  const { patients, setView, selectPatient } = useStore()
+  const { setView, selectPatient } = useStore()
+  const { data: patients = [], isLoading: pLoading } = usePatients()
+  const { data: crisisOrders = [] } = useAllCrisisOrders()
+  const { data: allSessions = [] } = useAllSessions()
 
-  const redAlerts = patients.filter(p => p.alertStatus === 'rojo')
-  const pendingCrisis = patients.flatMap(p =>
-    p.crisisOrders.filter(c => c.status === 'pendiente').map(c => ({ patient: p, crisis: c }))
-  )
-  const upcomingSessions = patients
-    .flatMap(p => p.sessions
-      .filter(s => s.status === 'confirmada' || s.status === 'pendiente')
-      .map(s => ({ patient: p, session: s }))
-    )
-    .sort((a, b) => a.session.date.localeCompare(b.session.date))
+  if (pLoading) return <div className="p-6 text-slate-400">Cargando...</div>
+
+  const redAlerts = patients.filter(p => p.alert_status === 'rojo')
+  const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente')
+  const upcomingSessions = (allSessions ?? [])
+    .filter((s: any) => s.status === 'confirmada' || s.status === 'pendiente')
+    .sort((a: any, b: any) => a.fecha.localeCompare(b.fecha))
     .slice(0, 6)
 
   const phaseDistribution = patients.reduce((acc, p) => {
-    acc[p.currentPhase] = (acc[p.currentPhase] ?? 0) + 1
+    const phase = p.fase_journey as Phase
+    acc[phase] = (acc[phase] ?? 0) + 1
     return acc
   }, {} as Record<Phase, number>)
 
@@ -78,12 +82,12 @@ export function MainDashboard() {
                 className="flex items-center justify-between bg-white rounded-lg p-3 border border-red-200 hover:border-red-400 text-left w-full transition-colors"
               >
                 <div>
-                  <p className="text-sm font-semibold text-slate-800">{p.name}</p>
-                  <p className="text-xs text-slate-500">{p.cancerType} · Estadio {p.stage}</p>
-                  <p className="text-xs text-red-600 mt-0.5">Estado mental: {p.mindState}</p>
+                  <p className="text-sm font-semibold text-slate-800">{p.nombre}</p>
+                  <p className="text-xs text-slate-500">{p.tipo_cancer} · Estadio {p.estadio}</p>
+                  <p className="text-xs text-red-600 mt-0.5">Estado mental: {p.mind_state}</p>
                 </div>
-                <span className={cn('text-xs font-semibold px-2 py-1 rounded-full', PHASE_COLORS[p.currentPhase])}>
-                  {p.currentPhase}
+                <span className={cn('text-xs font-semibold px-2 py-1 rounded-full', PHASE_COLORS[p.fase_journey as Phase])}>
+                  {p.fase_journey}
                 </span>
               </button>
             ))}
@@ -99,23 +103,23 @@ export function MainDashboard() {
             <h3 className="text-sm font-semibold text-slate-700">Próximas Citas</h3>
           </div>
           <div className="space-y-2">
-            {upcomingSessions.map(({ patient, session }) => (
+            {upcomingSessions.map((s: any) => (
               <button
-                key={session.id}
-                onClick={() => openPatient(patient.id)}
+                key={s.id}
+                onClick={() => openPatient(s.patient_id)}
                 className="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-100 text-left"
               >
                 <div>
-                  <p className="text-xs font-semibold text-slate-700">{patient.name}</p>
-                  <p className="text-xs text-slate-400">{session.programCode} · {session.therapist}</p>
+                  <p className="text-xs font-semibold text-slate-700">{s.patients?.nombre ?? '—'}</p>
+                  <p className="text-xs text-slate-400">{s.programa_code} · {s.therapist_name ?? '—'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-medium text-teal-600">{formatDate(session.date)}</p>
+                  <p className="text-xs font-medium text-teal-600">{formatDate(s.fecha)}</p>
                   <span className={cn(
                     'text-[10px] px-1.5 py-0.5 rounded-full',
-                    session.status === 'confirmada' ? 'bg-blue-100 text-blue-600' : 'bg-yellow-100 text-yellow-600'
+                    s.status === 'confirmada' ? 'bg-blue-100 text-blue-600' : 'bg-yellow-100 text-yellow-600'
                   )}>
-                    {session.status}
+                    {s.status}
                   </span>
                 </div>
               </button>
@@ -169,17 +173,17 @@ export function MainDashboard() {
             <h3 className="text-sm font-semibold text-red-700">Órdenes de Crisis Pendientes (PS-01)</h3>
           </div>
           <div className="space-y-2">
-            {pendingCrisis.map(({ patient, crisis }) => (
+            {pendingCrisis.map((crisis: any) => (
               <button
                 key={crisis.id}
-                onClick={() => openPatient(patient.id)}
+                onClick={() => openPatient(crisis.patient_id)}
                 className="w-full flex items-center justify-between p-3 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 text-left"
               >
                 <div>
-                  <p className="text-xs font-semibold text-red-700">{patient.name}</p>
-                  <p className="text-xs text-red-500">{crisis.trigger}</p>
+                  <p className="text-xs font-semibold text-red-700">{crisis.patients?.nombre ?? '—'}</p>
+                  <p className="text-xs text-red-500">{crisis.trigger_reason}</p>
                 </div>
-                <span className="text-xs text-red-600 font-medium">{formatDate(crisis.date)}</span>
+                <span className="text-xs text-red-600 font-medium">{formatDate(crisis.created_at)}</span>
               </button>
             ))}
           </div>

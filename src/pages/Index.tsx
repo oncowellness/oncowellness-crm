@@ -19,6 +19,8 @@ import { RoleGuard } from '@/components/auth/RoleGuard'
 import { InviteUserPanel } from '@/components/admin/InviteUserPanel'
 import { SecurityDashboard } from '@/components/security/SecurityDashboard'
 import { StaffManagement } from '@/components/admin/StaffManagement'
+import { MfaEnroll } from '@/components/auth/MfaEnroll'
+import { MfaVerify } from '@/components/auth/MfaVerify'
 import { useAuth } from '@/contexts/AuthContext'
 import { useStore } from '@/store/useStore'
 import { useInactivityLogout } from '@/hooks/useInactivityLogout'
@@ -96,7 +98,7 @@ function AuthenticatedApp() {
 }
 
 const Index = () => {
-  const { user, loading } = useAuth()
+  const { user, loading, mfaStatus, setMfaVerified, signOut } = useAuth()
   const { isLocked, loading: lockLoading } = useEmergencyLock()
 
   if (loading || lockLoading) {
@@ -116,6 +118,15 @@ const Index = () => {
 
   if (isLocked) {
     return <EmergencyLockPage />
+  }
+
+  // MFA gates for admin/director
+  if (mfaStatus === 'needs_enroll') {
+    return <MfaEnroll onComplete={setMfaVerified} />
+  }
+
+  if (mfaStatus === 'needs_verify') {
+    return <MfaVerify onVerified={setMfaVerified} onSignOut={signOut} />
   }
 
   return <AuthenticatedApp />

@@ -55,10 +55,12 @@ export function Header() {
 
   const [showNotifs, setShowNotifs] = useState(false)
   const notifRef = useRef<HTMLDivElement>(null)
+  const { notifications: realtimeNotifs, markAllRead } = useNotificationStore()
 
   const unresolvedAlerts = (alerts ?? []).filter((a: any) => !a.resolved)
   const pendingCrisis = (crisisOrders ?? []).filter((c: any) => c.status === 'pendiente')
-  const totalBadge = unresolvedAlerts.length + pendingCrisis.length
+  const unreadRealtime = realtimeNotifs.filter(n => !n.read).length
+  const totalBadge = Math.max(unresolvedAlerts.length + pendingCrisis.length, unreadRealtime)
 
   const initials = profile?.nombre ? profile.nombre.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() : 'OW'
   const primaryRole = roles.length > 0 ? ROLE_LABELS[roles[0]] ?? roles[0] : 'Sin rol'
@@ -74,22 +76,43 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [showNotifs])
 
+  const notifIcon = (n: { type: string; severity: string }) => {
+    if (n.type === 'crisis') return <Brain size={14} className="text-red-600" />
+    if (n.type === 'test') return <TestTube size={14} className="text-blue-500" />
+    return <AlertTriangle size={14} className={n.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'} />
+  }
+
+  // Merge DB-based + realtime notifications, dedup by id
+  const seenIds = new Set<string>()
   const recentNotifs = [
-    ...unresolvedAlerts.slice(0, 5).map((a: any) => ({
+    ...realtimeNotifs.map(n => {
+      seenIds.add(n.id)
+      return {
+        id: n.id,
+        icon: notifIcon(n),
+        text: n.patientName ? `${n.patientName}: ${n.message}` : n.message,
+        time: n.timestamp,
+        severity: n.severity,
+        read: n.read,
+      }
+    }),
+    ...unresolvedAlerts.filter((a: any) => !seenIds.has(a.id)).slice(0, 5).map((a: any) => ({
       id: a.id,
       icon: <AlertTriangle size={14} className={a.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'} />,
       text: a.message ?? a.alert_type,
       time: a.created_at,
       severity: a.severity,
+      read: false,
     })),
-    ...pendingCrisis.slice(0, 3).map((c: any) => ({
+    ...pendingCrisis.filter((c: any) => !seenIds.has(c.id)).slice(0, 3).map((c: any) => ({
       id: c.id,
       icon: <Brain size={14} className="text-red-600" />,
       text: c.trigger_reason,
       time: c.created_at,
       severity: 'critical',
+      read: false,
     })),
-  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 6)
+  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 8)
 
   return (
     <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-10">

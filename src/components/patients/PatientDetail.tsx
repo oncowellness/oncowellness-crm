@@ -237,8 +237,9 @@ export function PatientDetail() {
         )}
       </div>
 
-      {/* Journey timeline */}
+      {/* Journey timeline + Phase History */}
       <JourneyTimeline currentPhase={patient.fase_journey as Phase} mindState={patient.mind_state ?? 'Activo'} />
+      <PhaseHistory patientId={patient.id} />
 
       {/* Key metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

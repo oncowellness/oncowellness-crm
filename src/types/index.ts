@@ -216,3 +216,4 @@ export type View =
   | 'staff-management'
   | 'activity'
   | 'analytics'
+  | 'financial'

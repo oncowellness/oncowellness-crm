@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
-import { Search, Filter, AlertTriangle, CheckCircle, AlertCircle, User, UserPlus } from 'lucide-react'
+import { Search, Filter, AlertTriangle, CheckCircle, AlertCircle, User, UserPlus, Users } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatients } from '@/hooks/usePatients'
 import { PHASE_LABELS, type Phase, type AlertStatus } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
 import { NewPatientModal } from './NewPatientModal'
+import { PatientListSkeleton } from '@/components/ui/LoadingSkeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const ALERT_CONFIG: Record<AlertStatus, { label: string; icon: React.ReactNode; classes: string }> = {
   verde: { label: 'Estable', icon: <CheckCircle size={14} />, classes: 'bg-green-100 text-green-700' },

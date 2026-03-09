@@ -257,7 +257,7 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
                   <Check size={14} /> Guardar ahora
                 </button>
               )}
-              <button onClick={() => setStep(s => (s + 1) as Step)} disabled={!canNext} className="flex items-center gap-1.5 text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed">
+              <button onClick={tryNext} className="flex items-center gap-1.5 text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed">
                 Siguiente <ChevronRight size={14} />
               </button>
             </div>

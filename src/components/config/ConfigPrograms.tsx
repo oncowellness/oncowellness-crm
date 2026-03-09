@@ -298,22 +298,18 @@ export function ConfigPrograms() {
               <thead><tr className="border-b border-slate-100">
                 <th className="text-left text-xs font-semibold text-slate-400 px-5 py-2 w-24">Código</th>
                 <th className="text-left text-xs font-semibold text-slate-400 px-4 py-2">Nombre</th>
-                <th className="text-left text-xs font-semibold text-slate-400 px-4 py-2 hidden lg:table-cell w-40">Modalidad</th>
-                <th className="text-left text-xs font-semibold text-slate-400 px-4 py-2 w-20">Ses.</th>
-                <th className="text-left text-xs font-semibold text-slate-400 px-4 py-2 w-24 hidden md:table-cell">Precio</th>
-                <th className="text-left text-xs font-semibold text-slate-400 px-4 py-2 w-24 hidden md:table-cell">Margen</th>
-                <th className="w-24" />
+                <th className="text-left text-xs font-semibold text-slate-400 px-4 py-2">Descripción</th>
+                <th className="text-left text-xs font-semibold text-slate-400 px-4 py-2 hidden lg:table-cell">Objetivos</th>
+                <th className="w-20" />
               </tr></thead>
               <tbody>
                 {items.map(p => {
                   const isEditing = editingId === p.id
                   const isExpanded = expandedId === p.id
-                  const margen = (p.precio_sesion ?? 0) - (p.coste_sesion ?? 0)
-                  const margenPct = p.precio_sesion ? ((margen / p.precio_sesion) * 100).toFixed(0) : null
 
                   if (isEditing) return (
                     <tr key={p.id}>
-                      <td colSpan={7} className="p-4 bg-teal-50 border-b border-slate-100">
+                      <td colSpan={5} className="p-4 bg-teal-50 border-b border-slate-100">
                         <div className="flex items-center gap-2 mb-3">
                           <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', TYPE_COLORS[type])}>{p.code}</span>
                           <span className="text-sm font-semibold text-slate-700">Editando</span>
@@ -328,29 +324,21 @@ export function ConfigPrograms() {
                   )
 
                   return (
-                    <tr key={p.id} className="border-b border-slate-50 last:border-0 group">
+                    <tr key={p.id} className={cn('border-b border-slate-50 last:border-0 group cursor-pointer hover:bg-slate-50/60 transition-colors', isExpanded && 'bg-slate-50/40')}
+                      onClick={() => setExpandedId(isExpanded ? null : p.id)}>
                       <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{p.code}</span></td>
                       <td className="px-4 py-3">
                         <div className="text-sm font-medium text-slate-700">{p.nombre}</div>
                         {p.tipo_intervencion && <div className="text-xs text-slate-400 mt-0.5">{p.tipo_intervencion}</div>}
                       </td>
-                      <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell">{p.modalidad ?? '—'}</td>
-                      <td className="px-4 py-3 text-xs text-slate-500 text-center">{p.sesiones ?? '—'}</td>
-                      <td className="px-4 py-3 text-xs text-slate-500 hidden md:table-cell">{p.precio_sesion != null ? `€${Number(p.precio_sesion).toFixed(0)}` : '—'}</td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        {p.precio_sesion != null ? (
-                          <span className={cn('text-xs font-semibold', margen > 0 ? 'text-emerald-600' : 'text-red-500')}>
-                            €{margen.toFixed(0)} ({margenPct}%)
-                          </span>
-                        ) : <span className="text-xs text-slate-400">—</span>}
-                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-500 max-w-xs truncate">{p.descripcion || '—'}</td>
+                      <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell max-w-xs truncate">{p.objetivos || '—'}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
-                          <button onClick={() => setExpandedId(isExpanded ? null : p.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-100 text-slate-400 transition-opacity">
-                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                          </button>
-                          <button onClick={() => startEdit(p)}
+                          <span className="text-slate-400 transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                            <ChevronDown size={14} />
+                          </span>
+                          <button onClick={(e) => { e.stopPropagation(); startEdit(p) }}
                             className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs text-slate-500 border border-slate-200 px-2 py-1 rounded-lg hover:bg-white transition-opacity">
                             <Pencil size={11} /> Editar
                           </button>

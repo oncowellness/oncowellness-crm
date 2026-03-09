@@ -1,0 +1,262 @@
+// ─── Taxonomía clínica curada para programas oncológicos ───
+// Basada en estándares NCCN, ESMO, ASCO y análisis del catálogo Oncowellness
+
+// ── Síntomas / Pain Points (multi-select) ──
+export const SINTOMAS_OPTIONS = [
+  // Físicos – generales
+  'Fatiga / CRF',
+  'Dolor oncológico moderado-severo',
+  'Dolor irruptivo',
+  'Dolor musculoesquelético',
+  'Dolor crónico persistente',
+  'Dolor pélvico',
+  'Debilidad / sarcopenia',
+  'Decondicionamiento físico',
+  'Fragilidad',
+  // Físicos – tratamiento
+  'Náuseas',
+  'Mucositis',
+  'Diarrea / estreñimiento',
+  'Neuropatía periférica',
+  'Mialgias / rigidez',
+  'Disnea',
+  'Linfedema / pesadez',
+  'Incontinencia',
+  'Úlceras por presión',
+  'Espasticidad',
+  // Nutricionales
+  'Pérdida de peso > 5%',
+  'Anorexia / inapetencia',
+  'Caquexia',
+  'Sobrepeso post-tratamiento',
+  'Confusión dietética',
+  // Dermatológicos
+  'Caída del cabello / alopecia',
+  'Sequedad cutánea extrema',
+  'Prurito',
+  'Eritema / rash cutáneo',
+  'Síndrome mano-pie',
+  'Grietas / fisuras',
+  'Cambios en uñas',
+  'Cicatrices visibles',
+  'Hiperpigmentaciones',
+  'Toxicidad cutánea grado 2-3',
+  // Psicológicos
+  'Ansiedad aguda',
+  'Ansiedad generalizada',
+  'Depresión / ánimo bajo',
+  'Insomnio',
+  'Rumiación',
+  'Shock emocional',
+  'Miedo a la muerte',
+  'Miedo al tratamiento',
+  'Miedo a la recaída (scanxiety)',
+  'Fatiga anticipatoria',
+  'Agotamiento emocional',
+  'Desesperanza',
+  'Duelo anticipado',
+  'Crisis existencial',
+  'Angustia existencial',
+  'Brain fog / deterioro cognitivo',
+  // Sociales / funcionales
+  'Aislamiento social',
+  'Cambio imagen corporal',
+  'Disfunción sexual',
+  'Dispareunia',
+  'Disfunción eréctil',
+  'Vergüenza / estigma',
+  'Pérdida de roles',
+  'Dificultad retorno laboral',
+  'Estrés financiero',
+  'Desinformación',
+  'Soledad',
+  'Culpa',
+  'Desorientación vital',
+  'Conflicto familiar decisiones',
+  'Desgaste del cuidador',
+  'Niños/adolescentes en duelo',
+]
+
+// ── Momento del Journey (multi-select) ──
+export const MOMENTO_JOURNEY_OPTIONS = [
+  'Shock diagnóstico',
+  'Espera de resultados',
+  'Espera de tratamiento',
+  'Planificación prequirúrgica',
+  'Inicio QT/RT',
+  'Durante ciclos QT/RT',
+  'Post-sesiones tratamiento',
+  'Post-alta quirúrgica',
+  'Post-cirugía con vaciamiento ganglionar',
+  'Días malos durante tratamiento',
+  'Fin de tratamiento',
+  'Post-tratamiento inmediato',
+  'Supervivencia temprana',
+  'Rehabilitación',
+  'Seguimiento / revisiones',
+  'Hormonoterapia prolongada',
+  'Seguimiento largo plazo',
+  'Noticia de recaída',
+  'Cambio de línea de tratamiento',
+  'Enfermedad avanzada estable',
+  'Últimas semanas de vida',
+  'Fase terminal',
+  'Post-fallecimiento (familia)',
+  'Todo el journey',
+]
+
+// ── Mind State Paciente (multi-select, representan transición "desde → hacia") ──
+export const MIND_STATE_OPTIONS = [
+  'Shock',
+  'Caución',
+  'Vulnerable',
+  'Agotado',
+  'Alivio',
+  'Preocupado',
+  'Confianza',
+  'Sanación',
+  'Perdido',
+  'Resignación activa',
+  'Carga',
+  'Despedida',
+  'Perdón',
+  'Duelo',
+  'Reconstrucción',
+  'Aceptación',
+  'Pérdida de control',
+  'Seguridad',
+  'Abrumado',
+  'Vergüenza',
+]
+
+// ── Perfil Paciente Diana (multi-select) ──
+export const PERFIL_PACIENTE_OPTIONS = [
+  // Por localización tumoral
+  'Mama',
+  'Próstata',
+  'Vejiga',
+  'Pélvico / ginecológico',
+  'Cabeza y cuello',
+  'Tórax / pulmón',
+  'Gastrointestinal',
+  'Mieloma / hematológico',
+  'Todos los tumores',
+  // Por fase clínica
+  'Pre-tratamiento',
+  'En QT/RT activa',
+  'En hormonoterapia',
+  'Post-quirúrgico',
+  'Post-tratamiento primario',
+  'Enfermedad avanzada',
+  'Fase terminal (ECOG 3-4)',
+  'Metástasis óseas estables',
+  // Por perfil funcional
+  'Con fatiga CRF ≥ 4/10',
+  'Con caquexia / pérdida peso > 5%',
+  'Con riesgo nutricional (NRS ≥ 3)',
+  'Con screening psicológico positivo',
+  'Con toxicidad cutánea/capilar',
+  'Con limitación funcional significativa',
+  'Con dolor EVA ≥ 4',
+  'Post-vaciamiento ganglionar',
+  // Por perfil social
+  'En edad laboral',
+  'Pronóstico < 12 meses',
+  'Familiares / cuidadores principales',
+  'Niños/adolescentes en duelo',
+  'Cualquier estadio al diagnóstico',
+]
+
+// ── Recursos Necesarios (multi-select) ──
+export const RECURSOS_OPTIONS = [
+  // Profesionales
+  'Fisioterapeuta oncológico/a',
+  'Fisioterapeuta linfática',
+  'Fisioterapeuta suelo pélvico',
+  'Fisioterapeuta paliativa',
+  'Psicólogo/a clínico/a onco',
+  'Nutricionista oncológico/a',
+  'Trabajador/a social',
+  'Terapeuta ocupacional',
+  'Sexólogo/a',
+  'Esteticista oncológica',
+  'Médico dolor / paliativos',
+  'Enfermería',
+  'Capellán / acompañamiento espiritual',
+  'Community manager',
+  'Educador/a ejercicio',
+  'Equipo multidisciplinar completo',
+  // Espacios
+  'Sala ejercicio / gimnasio',
+  'Sala consulta',
+  'Sala rehabilitación',
+  'Sala grupal',
+  'Domicilio del paciente',
+  // Equipamiento
+  'Ergómetro',
+  'Pulsioxímetro',
+  'Material resistencia (bandas/pesas)',
+  'Material medición ROM',
+  'Bioimpedancia',
+  'Ayudas técnicas',
+  'Vendajes / prendas compresivas',
+  'Material posicionamiento',
+  'Material educativo / folletos',
+  'Productos dermocosmética',
+  'Productos barrera / apósitos',
+  'Suplementos nutricionales',
+  // Digital
+  'Plataforma teleasistencia / online',
+  'Plataforma digital comunitaria',
+]
+
+// ── Canal Captación (multi-select) ──
+export const CANAL_CAPTACION_OPTIONS = [
+  // Derivación médica
+  'Oncólogo / oncóloga',
+  'Cirujano/a',
+  'Médico prescriptor',
+  'Enfermería oncológica',
+  'Enfermería QT',
+  'MAP (Médico Atención Primaria)',
+  'Equipo paliativos',
+  'Urólogo/a',
+  'Ginecólogo/a',
+  'Dermatología',
+  'Psiquiatría',
+  'Médico rehabilitador',
+  'Endocrinología',
+  'Reumatología',
+  'Anestesia',
+  'Urgencias',
+  // Interno
+  'Fisioterapeuta (derivación interna)',
+  'Trabajo social (derivación interna)',
+  // Externo
+  'RRSS / marketing digital',
+  'SEO / web',
+  'Boca a boca / pacientes',
+  'RRHH empresa',
+  'Familia',
+  'Asociaciones de pacientes',
+]
+
+// ── Productos Asociados (multi-select) ──
+// Códigos de producto del catálogo
+export const PRODUCTOS_ASOCIADOS_OPTIONS = [
+  'MT-01 — Material terapéutico básico',
+  'MT-02 — Material terapéutico domiciliario',
+  'MT-03 — Material retorno laboral',
+  'SN-01 — Suplemento nutricional estándar',
+  'SN-02 — Suplemento nutricional prehabilitación',
+  'SN-03 — Suplemento nutricional supervivencia',
+  'DC-01 — Kit dermocosmética preventiva',
+  'DC-02 — Kit dermocosmética mano-pie',
+  'DC-03 — Kit dermocosmética uñas',
+  'DC-04 — Kit dermocosmética post-tratamiento',
+  'LB-01 — Libros / guías paciente',
+  'LB-04 — Libros duelo / legado',
+]
+
+// ── Paquetes Relacionados (multi-select, referencia a códigos de programa) ──
+// Se construyen dinámicamente desde los programas existentes

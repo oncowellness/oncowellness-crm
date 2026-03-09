@@ -26,14 +26,19 @@ const STEP_LABELS: Record<Step, string> = {
 }
 
 function Field({
-  label, required, children,
-}: { label: string; required?: boolean; children: React.ReactNode }) {
+  label, required, children, error,
+}: { label: string; required?: boolean; children: React.ReactNode; error?: string }) {
   return (
     <div>
       <label className="text-xs font-medium text-slate-600 block mb-1">
         {label}{required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
       {children}
+      {error && (
+        <p className="flex items-center gap-1 text-xs text-red-500 mt-1">
+          <AlertCircle size={12} /> {error}
+        </p>
+      )}
     </div>
   )
 }

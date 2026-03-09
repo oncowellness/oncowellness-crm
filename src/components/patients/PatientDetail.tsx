@@ -248,6 +248,9 @@ export function PatientDetail() {
         </div>
       </div>
 
+      {/* Clinical Trends Charts */}
+      <ClinicalTrends tests={clinicalTests} />
+
       {/* Programs & Sessions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-white rounded-xl border border-slate-200 p-5">

@@ -13,6 +13,7 @@ import {
   Layers,
   Coins,
   Shield,
+  UserPlus,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { useAuth } from '@/contexts/AuthContext'

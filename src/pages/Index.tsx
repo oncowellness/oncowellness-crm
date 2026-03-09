@@ -80,6 +80,7 @@ function ViewRouter() {
 
 function AuthenticatedApp() {
   useInactivityLogout()
+  useRealtimeNotifications()
 
   return (
     <div className="flex min-h-screen bg-background">

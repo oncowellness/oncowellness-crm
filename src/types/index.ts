@@ -215,3 +215,4 @@ export type View =
   | 'invitations'
   | 'staff-management'
   | 'activity'
+  | 'analytics'

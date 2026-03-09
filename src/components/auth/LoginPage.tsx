@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Heart, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { validatePassword } from '@/lib/passwordPolicy'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')

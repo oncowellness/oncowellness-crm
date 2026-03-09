@@ -27,12 +27,13 @@ const TOP_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Pacientes', icon: <Users size={18} />, view: 'patients' },
 ]
 
-const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?: boolean }[] = [
+const BOTTOM_NAV: { label: string; icon: React.ReactNode; view: View; adminOnly?: boolean; directorOnly?: boolean }[] = [
   { label: 'Calendario', icon: <CalendarDays size={18} />, view: 'calendar' },
   { label: 'Invitaciones', icon: <UserPlus size={18} />, view: 'invitations', adminOnly: true },
   { label: 'Liquidación', icon: <Coins size={18} />, view: 'incentives', adminOnly: true },
+  { label: 'Gestión Personal', icon: <Shield size={18} />, view: 'staff-management', directorOnly: true },
   { label: 'Seguridad', icon: <Shield size={18} />, view: 'security' },
-  { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs' },
+  { label: 'Configuración', icon: <Settings size={18} />, view: 'config-programs', adminOnly: true },
 ]
 
 const CONFIG_NAV: { label: string; icon: React.ReactNode; view: View }[] = [

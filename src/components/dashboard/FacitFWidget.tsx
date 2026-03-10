@@ -3,74 +3,70 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
 import { Activity, Plus, X } from 'lucide-react'
-import { useAllClinicalTests } from '@/hooks/useClinicalTests'
-import { useCreateClinicalTest } from '@/hooks/useClinicalTests'
-import { usePatients } from '@/hooks/usePatients'
+import { useClinicalTests, useCreateClinicalTest } from '@/hooks/useClinicalTests'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
 const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
 
-export function FacitFWidget() {
-  const { data: allTests = [] } = useAllClinicalTests()
-  const { data: patients = [] } = usePatients()
+interface FacitFWidgetProps {
+  patientId: string
+}
+
+export function FacitFWidget({ patientId }: FacitFWidgetProps) {
+  const { data: clinicalTests = [] } = useClinicalTests(patientId)
   const createTest = useCreateClinicalTest()
   const [showForm, setShowForm] = useState(false)
-  const [selectedPatient, setSelectedPatient] = useState('')
   const [score, setScore] = useState('')
   const [isBaseline, setIsBaseline] = useState(false)
   const [notes, setNotes] = useState('')
 
   const facitTests = useMemo(() =>
-    allTests
-      .filter((t: any) => t.tipo === 'FACIT-F')
-      .sort((a: any, b: any) => a.created_at.localeCompare(b.created_at)),
-    [allTests]
+    clinicalTests
+      .filter(t => t.tipo === 'FACIT-F')
+      .sort((a, b) => a.created_at.localeCompare(b.created_at)),
+    [clinicalTests]
   )
 
-  // Group by patient for the chart — show last 20 entries across all patients
   const chartData = useMemo(() =>
-    facitTests.slice(-20).map((t: any) => ({
+    facitTests.map(t => ({
       date: fmt(t.created_at),
       value: t.valor_numerico ?? 0,
-      patient: t.patients?.nombre ?? '—',
+      isBaseline: t.is_baseline,
     })),
     [facitTests]
   )
 
-  // Summary stats
-  const avgScore = facitTests.length > 0
-    ? (facitTests.reduce((s: number, t: any) => s + (t.valor_numerico ?? 0), 0) / facitTests.length).toFixed(1)
+  const baseline = facitTests.find(t => t.is_baseline)
+  const latest = facitTests[facitTests.length - 1]
+  const delta = baseline && latest && latest.id !== baseline.id
+    ? (latest.valor_numerico ?? 0) - (baseline.valor_numerico ?? 0)
     : null
-  const latestTest = facitTests[facitTests.length - 1]
-  const patientsWithFACIT = new Set(facitTests.map((t: any) => t.patient_id)).size
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const val = parseFloat(score)
-    if (!selectedPatient || isNaN(val) || val < 0 || val > 52) {
-      toast.error('Selecciona paciente y puntuación válida (0–52)')
+    if (isNaN(val) || val < 0 || val > 52) {
+      toast.error('Puntuación válida: 0–52')
       return
     }
     try {
       await createTest.mutateAsync({
-        patient_id: selectedPatient,
+        patient_id: patientId,
         tipo: 'FACIT-F',
         valor_numerico: val,
         is_baseline: isBaseline,
         notas: notes || null,
       })
-      toast.success('FACIT-F registrado correctamente')
+      toast.success('FACIT-F registrado')
       setShowForm(false)
-      setSelectedPatient('')
       setScore('')
       setIsBaseline(false)
       setNotes('')
     } catch {
-      toast.error('Error al registrar el test')
+      toast.error('Error al registrar')
     }
   }
 
@@ -97,21 +93,25 @@ export function FacitFWidget() {
         </Button>
       </div>
 
-      {/* Quick stats */}
+      {/* Summary stats */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="bg-slate-50 rounded-lg p-2.5 text-center">
-          <p className="text-[10px] text-slate-400">Promedio</p>
-          <p className="text-lg font-bold text-slate-700">{avgScore ?? 'N/D'}</p>
+          <p className="text-[10px] text-slate-400">Basal</p>
+          <p className="text-lg font-bold text-slate-700">
+            {baseline ? `${baseline.valor_numerico}/52` : 'N/D'}
+          </p>
         </div>
         <div className="bg-slate-50 rounded-lg p-2.5 text-center">
           <p className="text-[10px] text-slate-400">Último</p>
           <p className="text-lg font-bold text-emerald-600">
-            {latestTest ? `${latestTest.valor_numerico}/52` : 'N/D'}
+            {latest ? `${latest.valor_numerico}/52` : 'N/D'}
           </p>
         </div>
         <div className="bg-slate-50 rounded-lg p-2.5 text-center">
-          <p className="text-[10px] text-slate-400">Pacientes</p>
-          <p className="text-lg font-bold text-slate-700">{patientsWithFACIT}</p>
+          <p className="text-[10px] text-slate-400">Δ vs Basal</p>
+          <p className={cn('text-lg font-bold', delta !== null ? (delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-red-600' : 'text-slate-500') : 'text-slate-400')}>
+            {delta !== null ? `${delta > 0 ? '+' : ''}${delta}` : 'N/D'}
+          </p>
         </div>
       </div>
 
@@ -119,21 +119,6 @@ export function FacitFWidget() {
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Paciente</label>
-              <Select value={selectedPatient} onValueChange={setSelectedPatient}>
-                <SelectTrigger className="text-xs h-9">
-                  <SelectValue placeholder="Seleccionar..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {patients.map(p => (
-                    <SelectItem key={p.id} value={p.id} className="text-xs">
-                      {p.nombre} ({p.codigo})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
             <div>
               <label className="text-[11px] font-medium text-slate-600 mb-1 block">Puntuación (0–52)</label>
               <Input
@@ -146,8 +131,6 @@ export function FacitFWidget() {
                 className="text-xs h-9"
               />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[11px] font-medium text-slate-600 mb-1 block">Notas (opcional)</label>
               <Input
@@ -157,34 +140,34 @@ export function FacitFWidget() {
                 className="text-xs h-9"
               />
             </div>
-            <div className="flex items-end gap-2">
-              <label className="flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isBaseline}
-                  onChange={e => setIsBaseline(e.target.checked)}
-                  className="rounded border-slate-300"
-                />
-                Marcar como basal
-              </label>
-            </div>
           </div>
-          <Button type="submit" size="sm" className="w-full text-xs" disabled={createTest.isPending}>
-            {createTest.isPending ? 'Guardando…' : 'Guardar FACIT-F'}
-          </Button>
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isBaseline}
+                onChange={e => setIsBaseline(e.target.checked)}
+                className="rounded border-slate-300"
+              />
+              Marcar como basal
+            </label>
+            <Button type="submit" size="sm" className="text-xs" disabled={createTest.isPending}>
+              {createTest.isPending ? 'Guardando…' : 'Guardar FACIT-F'}
+            </Button>
+          </div>
         </form>
       )}
 
       {/* Chart */}
       {chartData.length > 0 ? (
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={220}>
           <LineChart data={chartData} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="#94a3b8" />
             <YAxis domain={[0, 52]} tick={{ fontSize: 10 }} stroke="#94a3b8" />
             <Tooltip
               contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #e2e8f0' }}
-              formatter={(v: number, _: any, props: any) => [`${v}/52`, props.payload.patient]}
+              formatter={(v: number) => [`${v}/52`, 'FACIT-F']}
               labelFormatter={(l) => `Fecha: ${l}`}
             />
             <ReferenceLine y={30} stroke="#f59e0b" strokeDasharray="6 3" label={{ value: 'Fatiga significativa', fontSize: 9, fill: '#f59e0b', position: 'right' }} />
@@ -192,7 +175,7 @@ export function FacitFWidget() {
           </LineChart>
         </ResponsiveContainer>
       ) : (
-        <p className="text-xs text-slate-400 text-center py-8">Sin datos FACIT-F registrados. Usa el botón "Registrar" para añadir la primera medición.</p>
+        <p className="text-xs text-slate-400 text-center py-8">Sin datos FACIT-F. Usa "Registrar" para añadir la primera medición.</p>
       )}
     </div>
   )

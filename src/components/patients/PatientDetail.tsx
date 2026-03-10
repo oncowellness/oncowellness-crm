@@ -239,6 +239,9 @@ export function PatientDetail() {
         )}
       </div>
 
+      {/* Administrative Info */}
+      <PatientAdminInfo patient={patient as any} />
+
       {/* Journey timeline + Phase History */}
       <JourneyTimeline currentPhase={patient.fase_journey as Phase} mindState={patient.mind_state ?? 'Activo'} />
       <PhaseHistory patientId={patient.id} />

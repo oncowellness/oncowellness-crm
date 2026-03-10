@@ -33,7 +33,7 @@ export function EmergencyKillSwitch() {
     setLoading(true)
     try {
       // Verify password server-side without creating session side effects
-      const { data: verified, error: verifyError } = await supabase.rpc('verify_current_password', {
+      const { data: verified, error: verifyError } = await (supabase.rpc as any)('verify_current_password', {
         _password: password,
       })
       if (verifyError || !verified) throw new Error('Contraseña incorrecta')

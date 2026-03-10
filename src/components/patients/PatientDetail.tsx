@@ -254,6 +254,9 @@ export function PatientDetail() {
         )}
       </div>
 
+      {/* Clinical Pathway Progress (MSK F1-F8) */}
+      <ClinicalPathwayProgress currentPhase={patient.fase_journey as Phase} />
+
       {/* Administrative Info */}
       <PatientAdminInfo patient={patient as any} />
 

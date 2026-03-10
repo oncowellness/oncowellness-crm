@@ -221,3 +221,4 @@ export type View =
   | 'analytics'
   | 'financial'
   | 'goals'
+  | 'proms'

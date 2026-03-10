@@ -54,6 +54,8 @@ function ViewRouter() {
       return <EmpowermentModule />
     case 'clinical-dashboard':
       return <ClinicalDashboard />
+    case 'proms':
+      return <PromsDashboard />
     case 'bundles':
       return <BundleManager />
     case 'calendar':

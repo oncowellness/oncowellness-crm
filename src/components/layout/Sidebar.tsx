@@ -48,6 +48,7 @@ const PATIENT_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Empoderamiento', icon: <BookOpen size={16} />, view: 'empowerment' },
   { label: 'Bundles', icon: <Package size={16} />, view: 'bundles' },
   { label: 'Dashboard Clínico', icon: <BarChart2 size={16} />, view: 'clinical-dashboard' },
+  { label: 'Cuestionarios', icon: <Heart size={16} />, view: 'proms' },
 ]
 
 export function Sidebar() {

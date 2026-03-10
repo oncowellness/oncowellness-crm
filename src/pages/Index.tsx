@@ -25,6 +25,7 @@ import { RoleGuard } from '@/components/auth/RoleGuard'
 import { InviteUserPanel } from '@/components/admin/InviteUserPanel'
 import { SecurityDashboard } from '@/components/security/SecurityDashboard'
 import { StaffManagement } from '@/components/admin/StaffManagement'
+import { PromsDashboard } from '@/components/proms/PromsDashboard'
 import { MfaEnroll } from '@/components/auth/MfaEnroll'
 import { MfaVerify } from '@/components/auth/MfaVerify'
 import { useAuth } from '@/contexts/AuthContext'
@@ -53,6 +54,8 @@ function ViewRouter() {
       return <EmpowermentModule />
     case 'clinical-dashboard':
       return <ClinicalDashboard />
+    case 'proms':
+      return <PromsDashboard />
     case 'bundles':
       return <BundleManager />
     case 'calendar':

@@ -731,11 +731,15 @@ export type Database = {
       patients: {
         Row: {
           active_status: boolean
+          address_extra: string | null
+          address_street: string | null
           alert_status: Database["public"]["Enums"]["alert_status_enum"] | null
           assigned_bundles: string[] | null
           assigned_programs: string[] | null
           assigned_staff_ids: string[] | null
+          city_name: string | null
           codigo: string
+          country_code: string | null
           created_at: string
           diagnostico: string | null
           edad: number | null
@@ -746,20 +750,28 @@ export type Database = {
           genero: string | null
           high_fall_risk: boolean | null
           id: string
+          identification_number: string | null
+          identification_type: string | null
           mind_state: Database["public"]["Enums"]["mind_state_enum"] | null
           nombre: string
           oncologo_referente: string | null
+          postal_code: string | null
+          province_name: string | null
           telefono: string | null
           tipo_cancer: string | null
           updated_at: string
         }
         Insert: {
           active_status?: boolean
+          address_extra?: string | null
+          address_street?: string | null
           alert_status?: Database["public"]["Enums"]["alert_status_enum"] | null
           assigned_bundles?: string[] | null
           assigned_programs?: string[] | null
           assigned_staff_ids?: string[] | null
+          city_name?: string | null
           codigo: string
+          country_code?: string | null
           created_at?: string
           diagnostico?: string | null
           edad?: number | null
@@ -770,20 +782,28 @@ export type Database = {
           genero?: string | null
           high_fall_risk?: boolean | null
           id?: string
+          identification_number?: string | null
+          identification_type?: string | null
           mind_state?: Database["public"]["Enums"]["mind_state_enum"] | null
           nombre: string
           oncologo_referente?: string | null
+          postal_code?: string | null
+          province_name?: string | null
           telefono?: string | null
           tipo_cancer?: string | null
           updated_at?: string
         }
         Update: {
           active_status?: boolean
+          address_extra?: string | null
+          address_street?: string | null
           alert_status?: Database["public"]["Enums"]["alert_status_enum"] | null
           assigned_bundles?: string[] | null
           assigned_programs?: string[] | null
           assigned_staff_ids?: string[] | null
+          city_name?: string | null
           codigo?: string
+          country_code?: string | null
           created_at?: string
           diagnostico?: string | null
           edad?: number | null
@@ -794,9 +814,13 @@ export type Database = {
           genero?: string | null
           high_fall_risk?: boolean | null
           id?: string
+          identification_number?: string | null
+          identification_type?: string | null
           mind_state?: Database["public"]["Enums"]["mind_state_enum"] | null
           nombre?: string
           oncologo_referente?: string | null
+          postal_code?: string | null
+          province_name?: string | null
           telefono?: string | null
           tipo_cancer?: string | null
           updated_at?: string

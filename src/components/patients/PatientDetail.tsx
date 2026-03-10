@@ -14,6 +14,7 @@ import { ClinicalReport } from '../reports/ClinicalReport'
 import { ClinicalTrends } from './ClinicalTrends'
 import { FacitFWidget } from '../dashboard/FacitFWidget'
 import { PhaseHistory } from './PhaseHistory'
+import { PatientAdminInfo } from './PatientAdminInfo'
 import { formatDate, cn } from '../../lib/utils'
 import { PHASE_LABELS, type AlertStatus, type Phase, type MindState } from '../../types'
 
@@ -237,6 +238,9 @@ export function PatientDetail() {
           </div>
         )}
       </div>
+
+      {/* Administrative Info */}
+      <PatientAdminInfo patient={patient as any} />
 
       {/* Journey timeline + Phase History */}
       <JourneyTimeline currentPhase={patient.fase_journey as Phase} mindState={patient.mind_state ?? 'Activo'} />

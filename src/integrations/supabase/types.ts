@@ -414,6 +414,74 @@ export type Database = {
           },
         ]
       }
+      encounters: {
+        Row: {
+          assessment: Json | null
+          completed_at: string | null
+          created_at: string
+          duration_minutes: number
+          encounter_type: string
+          id: string
+          new_phase: string | null
+          objective: Json | null
+          patient_id: string
+          phase_at_encounter: string
+          plan: Json | null
+          staff_id: string | null
+          staff_name: string | null
+          status: string
+          subjective: Json | null
+          triggers_phase_transition: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          assessment?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes?: number
+          encounter_type?: string
+          id?: string
+          new_phase?: string | null
+          objective?: Json | null
+          patient_id: string
+          phase_at_encounter?: string
+          plan?: Json | null
+          staff_id?: string | null
+          staff_name?: string | null
+          status?: string
+          subjective?: Json | null
+          triggers_phase_transition?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          assessment?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes?: number
+          encounter_type?: string
+          id?: string
+          new_phase?: string | null
+          objective?: Json | null
+          patient_id?: string
+          phase_at_encounter?: string
+          plan?: Json | null
+          staff_id?: string | null
+          staff_name?: string | null
+          status?: string
+          subjective?: Json | null
+          triggers_phase_transition?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "encounters_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number

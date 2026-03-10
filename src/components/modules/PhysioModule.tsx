@@ -248,10 +248,10 @@ export function PhysioModule() {
         </ResponsiveContainer>
       </div>
 
-      {/* 30STS */}
+      {/* 30STS chart + form */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-700">Test 30STS</h3>
+          <h3 className="text-sm font-semibold text-slate-700">Evolución Test 30STS (Fuerza MMII)</h3>
           <button onClick={() => setShowSTSForm(!showSTSForm)} className="flex items-center gap-1.5 text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-1.5 rounded-lg"><Plus size={12} /> Registrar</button>
         </div>
         {showSTSForm && (
@@ -263,19 +263,22 @@ export function PhysioModule() {
           </div>
         )}
         {stsTests.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead><tr className="border-b border-slate-100"><th className="text-left text-slate-500 py-2 pr-4">Fecha</th><th className="text-left text-slate-500 py-2">Reps</th></tr></thead>
-              <tbody>{stsTests.map(s => <tr key={s.id} className="border-b border-slate-50"><td className="py-1.5 pr-4 text-slate-600">{formatDate(s.created_at)}</td><td className="py-1.5 font-medium text-slate-800">{s.valor_numerico}</td></tr>)}</tbody>
-            </table>
-          </div>
-        ) : <p className="text-xs text-slate-400">Sin registros.</p>}
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={stsTests.map(s => ({ date: formatDate(s.created_at), 'Repeticiones': s.valor_numerico ?? 0 }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} unit=" reps" />
+              <Tooltip />
+              <Line type="monotone" dataKey="Repeticiones" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: '#8b5cf6', r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : <p className="text-xs text-slate-400">Sin registros 30STS.</p>}
       </div>
 
-      {/* TUG */}
+      {/* TUG chart + form */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-700">Timed Up and Go (TUG)</h3>
+          <h3 className="text-sm font-semibold text-slate-700">Evolución Timed Up and Go (TUG)</h3>
           <button onClick={() => setShowTUGForm(!showTUGForm)} className="flex items-center gap-1.5 text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-lg"><Plus size={12} /> Registrar</button>
         </div>
         {showTUGForm && (
@@ -287,13 +290,17 @@ export function PhysioModule() {
           </div>
         )}
         {tugTests.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead><tr className="border-b border-slate-100"><th className="text-left text-slate-500 py-2 pr-4">Fecha</th><th className="text-left text-slate-500 py-2 pr-4">Tiempo</th><th className="text-left text-slate-500 py-2">Riesgo</th></tr></thead>
-              <tbody>{tugTests.map(t => <tr key={t.id} className="border-b border-slate-50"><td className="py-1.5 pr-4 text-slate-600">{formatDate(t.created_at)}</td><td className={`py-1.5 pr-4 font-medium ${(t.valor_numerico ?? 0) > 12 ? 'text-red-600' : 'text-slate-800'}`}>{t.valor_numerico}s</td><td className="py-1.5"><span className={`text-xs font-medium ${(t.valor_numerico ?? 0) > 12 ? 'text-red-600' : 'text-green-600'}`}>{(t.valor_numerico ?? 0) > 12 ? 'Alto' : 'Normal'}</span></td></tr>)}</tbody>
-            </table>
-          </div>
-        ) : <p className="text-xs text-slate-400">Sin registros.</p>}
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={tugTests.map(t => ({ date: formatDate(t.created_at), 'Tiempo (s)': t.valor_numerico ?? 0 }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} unit=" s" />
+              <Tooltip />
+              <ReferenceLine y={12} stroke="#ef4444" strokeDasharray="6 3" label={{ value: 'Riesgo caída', fontSize: 10, fill: '#ef4444', position: 'right' }} />
+              <Line type="monotone" dataKey="Tiempo (s)" stroke="#f59e0b" strokeWidth={2} dot={{ fill: '#f59e0b', r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : <p className="text-xs text-slate-400">Sin registros TUG.</p>}
       </div>
     </div>
   )

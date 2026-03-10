@@ -59,17 +59,19 @@ export function PhysioModule() {
   const latestSixMWT = sixMWTTests[sixMWTTests.length - 1]
   const baselineSixMWT = sixMWTTests.find(s => s.is_baseline)
   const latestSTS = stsTests[stsTests.length - 1]
+  const baselineSTS = stsTests.find(s => s.is_baseline)
   const latestTUG = tugTests[tugTests.length - 1]
+  const baselineTUG = tugTests.find(t => t.is_baseline)
 
   const getVal = (t: any) => t?.valor_numerico ?? 0
   const getJson = (t: any) => (t?.valores_json ?? {}) as any
 
-  // Radar data
+  // Radar data — use baselines for all domains
   const radarData = [
     { domain: 'Fuerza', actual: latestHandgrip ? Math.min(100, (getVal(latestHandgrip) / 50) * 100) : 0, basal: baselineHandgrip ? Math.min(100, (getVal(baselineHandgrip) / 50) * 100) : 0 },
     { domain: 'Resistencia', actual: latestSixMWT ? Math.min(100, (getVal(latestSixMWT) / 600) * 100) : 0, basal: baselineSixMWT ? Math.min(100, (getVal(baselineSixMWT) / 600) * 100) : 0 },
-    { domain: 'Fuerza MMII', actual: latestSTS ? Math.min(100, (getVal(latestSTS) / 20) * 100) : 0, basal: 0 },
-    { domain: 'Agilidad', actual: latestTUG ? Math.max(0, ((20 - getVal(latestTUG)) / 15) * 100) : 0, basal: 0 },
+    { domain: 'Fuerza MMII', actual: latestSTS ? Math.min(100, (getVal(latestSTS) / 20) * 100) : 0, basal: baselineSTS ? Math.min(100, (getVal(baselineSTS) / 20) * 100) : 0 },
+    { domain: 'Agilidad', actual: latestTUG ? Math.max(0, ((20 - getVal(latestTUG)) / 15) * 100) : 0, basal: baselineTUG ? Math.max(0, ((20 - getVal(baselineTUG)) / 15) * 100) : 0 },
   ]
 
   const handgripData = handgripTests.map(h => ({

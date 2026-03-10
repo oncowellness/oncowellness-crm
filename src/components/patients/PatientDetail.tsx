@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { JourneyTimeline } from './JourneyTimeline'
 import { ClinicalReport } from '../reports/ClinicalReport'
 import { ClinicalTrends } from './ClinicalTrends'
+import { FacitFWidget } from '../dashboard/FacitFWidget'
 import { PhaseHistory } from './PhaseHistory'
 import { formatDate, cn } from '../../lib/utils'
 import { PHASE_LABELS, type AlertStatus, type Phase, type MindState } from '../../types'
@@ -240,6 +241,9 @@ export function PatientDetail() {
       {/* Journey timeline + Phase History */}
       <JourneyTimeline currentPhase={patient.fase_journey as Phase} mindState={patient.mind_state ?? 'Activo'} />
       <PhaseHistory patientId={patient.id} />
+
+      {/* FACIT-F Fatigue Evolution */}
+      <FacitFWidget patientId={patient.id} />
 
       {/* Key metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

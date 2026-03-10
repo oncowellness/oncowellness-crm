@@ -1,16 +1,17 @@
 import { useState, useCallback } from 'react'
-import { X, UserPlus, ChevronRight, ChevronLeft, Check, AlertCircle } from 'lucide-react'
+import { X, UserPlus, ChevronRight, ChevronLeft, Check, AlertCircle, MapPin, CreditCard } from 'lucide-react'
 import { useCreatePatient } from '@/hooks/usePatients'
 import { PHASE_LABELS, type Phase, type MindState } from '../../types'
 import { cn } from '../../lib/utils'
 import { toast } from 'sonner'
+import { SPAIN_PROVINCES, COUNTRIES, ID_TYPES } from '@/lib/spainGeo'
 
 interface Props {
   onClose: () => void
   onCreated: (id: string) => void
 }
 
-type Step = 1 | 2 | 3
+type Step = 1 | 2 | 3 | 4
 
 const MIND_STATES: MindState[] = ['Activo', 'Ansioso', 'Depresivo', 'Resiliente', 'Vulnerable']
 const PHASES = Object.keys(PHASE_LABELS) as Phase[]
@@ -21,8 +22,9 @@ const CANCER_TYPES = [
 
 const STEP_LABELS: Record<Step, string> = {
   1: 'Datos Personales',
-  2: 'Datos Clínicos',
-  3: 'Journey y Estado',
+  2: 'Info. Administrativa',
+  3: 'Datos Clínicos',
+  4: 'Journey y Estado',
 }
 
 function Field({
@@ -46,25 +48,64 @@ function Field({
 const inputCls = 'w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400'
 const inputErrorCls = 'w-full text-sm border border-red-300 rounded-lg px-3 py-2 bg-red-50/30 focus:outline-none focus:ring-2 focus:ring-red-400'
 
+const DNI_LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE'
+function validateDNI(value: string): boolean {
+  const match = value.match(/^(\d{8})([A-Z])$/)
+  if (!match) return false
+  return match[2] === DNI_LETTERS[parseInt(match[1], 10) % 23]
+}
+function validateNIE(value: string): boolean {
+  const match = value.match(/^([XYZ])(\d{7})([A-Z])$/)
+  if (!match) return false
+  const prefix = { X: '0', Y: '1', Z: '2' }[match[1]] ?? '0'
+  return match[3] === DNI_LETTERS[parseInt(prefix + match[2], 10) % 23]
+}
+
 export function NewPatientModal({ onClose, onCreated }: Props) {
   const createPatient = useCreatePatient()
   const [step, setStep] = useState<Step>(1)
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
+  // Step 1 - Personal
   const [name, setName] = useState('')
   const [age, setAge] = useState('')
   const [gender, setGender] = useState<'M' | 'F'>('F')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
 
+  // Step 2 - Administrative
+  const [idType, setIdType] = useState('')
+  const [idNumber, setIdNumber] = useState('')
+  const [addressStreet, setAddressStreet] = useState('')
+  const [addressExtra, setAddressExtra] = useState('')
+  const [postalCode, setPostalCode] = useState('')
+  const [cityName, setCityName] = useState('')
+  const [provinceName, setProvinceName] = useState('')
+  const [countryCode, setCountryCode] = useState('ES')
+
+  // Step 3 - Clinical
   const [diagnosis, setDiagnosis] = useState('')
   const [cancerType, setCancerType] = useState('')
   const [stage, setStage] = useState('')
   const [oncologist, setOncologist] = useState('')
   const [diagnosisDate, setDiagnosisDate] = useState(new Date().toISOString().split('T')[0])
 
+  // Step 4 - Journey
   const [currentPhase, setCurrentPhase] = useState<Phase>('F1')
   const [mindState, setMindState] = useState<MindState>('Activo')
+
+  // Validations
+  const idNumberError = (() => {
+    if (!touched.idNumber || !idNumber.trim()) return undefined
+    const val = idNumber.toUpperCase().trim()
+    if (idType === 'DNI' && !validateDNI(val)) return 'DNI no válido (8 dígitos + letra)'
+    if (idType === 'NIE' && !validateNIE(val)) return 'NIE no válido (X/Y/Z + 7 dígitos + letra)'
+    if (idType === 'Pasaporte' && val.length < 5) return 'Nº pasaporte demasiado corto'
+    return undefined
+  })()
+
+  const postalCodeError = touched.postalCode && postalCode.trim() && !/^\d{5}$/.test(postalCode.trim())
+    ? 'Código postal: 5 dígitos' : undefined
 
   const validations = {
     name: touched.name && !name.trim() ? 'El nombre es obligatorio' : undefined,
@@ -76,8 +117,10 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
   }
 
   const step1Valid = name.trim().length > 0 && age.trim().length > 0 && parseInt(age) >= 1 && parseInt(age) <= 120 && (!email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-  const step2Valid = diagnosis.trim().length > 0 && cancerType.trim().length > 0 && oncologist.trim().length > 0
-  const canNext = step === 1 ? step1Valid : step === 2 ? step2Valid : true
+  const step2Valid = !idNumberError && !postalCodeError // Admin fields are all optional
+  const step3Valid = diagnosis.trim().length > 0 && cancerType.trim().length > 0 && oncologist.trim().length > 0
+
+  const canNext = step === 1 ? step1Valid : step === 2 ? step2Valid : step === 3 ? step3Valid : true
 
   function markTouched(...fields: string[]) {
     setTouched(t => { const n = { ...t }; fields.forEach(f => n[f] = true); return n })
@@ -88,8 +131,11 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
       markTouched('name', 'age', 'email')
       if (!step1Valid) return
     } else if (step === 2) {
-      markTouched('diagnosis', 'cancerType', 'oncologist')
+      markTouched('idNumber', 'postalCode')
       if (!step2Valid) return
+    } else if (step === 3) {
+      markTouched('diagnosis', 'cancerType', 'oncologist')
+      if (!step3Valid) return
     }
     setStep(s => (s + 1) as Step)
   }
@@ -102,6 +148,14 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
       genero: gender,
       email: email.trim() || null,
       telefono: phone.trim() || null,
+      identification_type: idType || null,
+      identification_number: idNumber.toUpperCase().trim() || null,
+      address_street: addressStreet.trim() || null,
+      address_extra: addressExtra.trim() || null,
+      postal_code: postalCode.trim() || null,
+      city_name: cityName.trim() || null,
+      province_name: provinceName || null,
+      country_code: countryCode || 'ES',
       diagnostico: diagnosis.trim() || null,
       tipo_cancer: cancerType.trim() || null,
       estadio: stage.trim() || null,
@@ -126,6 +180,8 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
     }
   }
 
+  const allSteps = [1, 2, 3, 4] as Step[]
+
   return (
     <div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -147,9 +203,9 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
         </div>
 
         {/* Step progress */}
-        <div className="flex items-center px-6 pt-4 pb-2 gap-2">
-          {([1, 2, 3] as Step[]).map((s, i) => (
-            <div key={s} className="flex items-center gap-2 flex-1">
+        <div className="flex items-center px-6 pt-4 pb-2 gap-1">
+          {allSteps.map((s, i) => (
+            <div key={s} className="flex items-center gap-1.5 flex-1">
               <div className={cn(
                 'w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0',
                 step > s ? 'bg-teal-500 text-white' : step === s ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-400'
@@ -157,12 +213,12 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
                 {step > s ? <Check size={12} /> : s}
               </div>
               <span className={cn(
-                'text-xs font-medium whitespace-nowrap',
+                'text-[10px] font-medium whitespace-nowrap',
                 step === s ? 'text-teal-700' : 'text-slate-400'
               )}>
                 {STEP_LABELS[s]}
               </span>
-              {i < 2 && <div className={cn('flex-1 h-px', step > s ? 'bg-teal-400' : 'bg-slate-200')} />}
+              {i < 3 && <div className={cn('flex-1 h-px', step > s ? 'bg-teal-400' : 'bg-slate-200')} />}
             </div>
           ))}
         </div>
@@ -190,7 +246,62 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
               <Field label="Teléfono"><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="612 345 678" className={inputCls} maxLength={20} /></Field>
             </>
           )}
+
           {step === 2 && (
+            <>
+              <div className="flex items-center gap-2 mb-1">
+                <CreditCard size={14} className="text-teal-600" />
+                <p className="text-xs font-semibold text-slate-600">Documento de Identidad</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Tipo de documento">
+                  <select value={idType} onChange={e => setIdType(e.target.value)} className={inputCls}>
+                    <option value="">— Seleccionar —</option>
+                    {ID_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </Field>
+                <Field label="Número" error={idNumberError}>
+                  <input type="text" value={idNumber} onChange={e => setIdNumber(e.target.value.toUpperCase())} onBlur={() => markTouched('idNumber')}
+                    placeholder={idType === 'DNI' ? '12345678A' : idType === 'NIE' ? 'X1234567A' : 'Nº documento'}
+                    className={idNumberError ? inputErrorCls : inputCls} maxLength={20} />
+                </Field>
+              </div>
+
+              <div className="flex items-center gap-2 mt-4 mb-1">
+                <MapPin size={14} className="text-teal-600" />
+                <p className="text-xs font-semibold text-slate-600">Dirección</p>
+              </div>
+              <Field label="Calle y número">
+                <input type="text" value={addressStreet} onChange={e => setAddressStreet(e.target.value)} placeholder="Calle Mayor, 12" className={inputCls} maxLength={200} />
+              </Field>
+              <Field label="Piso / Puerta / Escalera">
+                <input type="text" value={addressExtra} onChange={e => setAddressExtra(e.target.value)} placeholder="3º B, Esc. Izda." className={inputCls} maxLength={100} />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Código Postal" error={postalCodeError}>
+                  <input type="text" value={postalCode} onChange={e => setPostalCode(e.target.value)} onBlur={() => markTouched('postalCode')} placeholder="28001" className={postalCodeError ? inputErrorCls : inputCls} maxLength={5} />
+                </Field>
+                <Field label="Ciudad">
+                  <input type="text" value={cityName} onChange={e => setCityName(e.target.value)} placeholder="Madrid" className={inputCls} maxLength={100} />
+                </Field>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Provincia">
+                  <select value={provinceName} onChange={e => setProvinceName(e.target.value)} className={inputCls}>
+                    <option value="">— Seleccionar —</option>
+                    {SPAIN_PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </Field>
+                <Field label="País">
+                  <select value={countryCode} onChange={e => setCountryCode(e.target.value)} className={inputCls}>
+                    {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                  </select>
+                </Field>
+              </div>
+            </>
+          )}
+
+          {step === 3 && (
             <>
               <Field label="Diagnóstico" required error={validations.diagnosis}><input autoFocus type="text" value={diagnosis} onChange={e => setDiagnosis(e.target.value)} onBlur={() => markTouched('diagnosis')} placeholder="Ej. Carcinoma ductal invasivo" className={validations.diagnosis ? inputErrorCls : inputCls} maxLength={200} /></Field>
               <div className="grid grid-cols-2 gap-3">
@@ -206,7 +317,8 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
               <Field label="Fecha de diagnóstico"><input type="date" value={diagnosisDate} onChange={e => setDiagnosisDate(e.target.value)} className={inputCls} /></Field>
             </>
           )}
-          {step === 3 && (
+
+          {step === 4 && (
             <>
               <Field label="Fase del Journey">
                 <div className="grid grid-cols-4 gap-2">
@@ -230,6 +342,8 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                   <div><span className="text-slate-400">Nombre:</span> <span className="text-slate-700 font-medium">{name}</span></div>
                   <div><span className="text-slate-400">Edad:</span> <span className="text-slate-700">{age} años · {gender === 'F' ? 'Mujer' : 'Hombre'}</span></div>
+                  {idNumber && <div><span className="text-slate-400">{idType || 'ID'}:</span> <span className="text-slate-700">{idNumber}</span></div>}
+                  {cityName && <div><span className="text-slate-400">Ciudad:</span> <span className="text-slate-700">{cityName}{provinceName && `, ${provinceName}`}</span></div>}
                   <div><span className="text-slate-400">Cáncer:</span> <span className="text-slate-700">{cancerType} {stage && `(${stage})`}</span></div>
                   <div><span className="text-slate-400">Oncólogo:</span> <span className="text-slate-700">{oncologist}</span></div>
                   <div><span className="text-slate-400">Fase:</span> <span className="text-slate-700">{currentPhase} – {PHASE_LABELS[currentPhase]}</span></div>
@@ -246,11 +360,11 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
             <ChevronLeft size={14} />{step === 1 ? 'Cancelar' : 'Anterior'}
           </button>
           <div className="flex items-center gap-1.5">
-            {([1, 2, 3] as Step[]).map(s => (
+            {allSteps.map(s => (
               <div key={s} className={cn('w-2 h-2 rounded-full', step === s ? 'bg-teal-500' : 'bg-slate-200')} />
             ))}
           </div>
-          {step < 3 ? (
+          {step < 4 ? (
             <div className="flex items-center gap-2">
               {step === 1 && (
                 <button onClick={handleSubmit} disabled={!step1Valid || createPatient.isPending} className="flex items-center gap-1.5 text-sm border border-teal-600 text-teal-700 px-4 py-2 rounded-lg hover:bg-teal-50 disabled:opacity-40 disabled:cursor-not-allowed">

@@ -38,10 +38,7 @@ export default function SetupAccount() {
   async function verifyToken() {
     try {
       const { data, error: fetchError } = await supabase
-        .from('invitations')
-        .select('*')
-        .eq('token', token)
-        .is('accepted_at', null)
+        .rpc('get_invitation_by_token', { _token: token })
         .single()
 
       if (fetchError || !data) {
@@ -82,11 +79,8 @@ export default function SetupAccount() {
 
       if (signUpError) throw signUpError
 
-      // Mark invitation as accepted
-      await supabase
-        .from('invitations')
-        .update({ accepted_at: new Date().toISOString() })
-        .eq('id', invitation.id)
+      // Mark invitation as accepted via secure RPC
+      await supabase.rpc('accept_invitation', { _invitation_id: invitation.id })
 
       // Assign the role from the invitation
       if (authData.user) {

@@ -48,7 +48,7 @@ export function SecurityDashboard() {
     setChangingPw(true)
     try {
       // Verify current password server-side without session side effects
-      const { data: verified, error: verifyError } = await supabase.rpc('verify_current_password', {
+      const { data: verified, error: verifyError } = await (supabase.rpc as any)('verify_current_password', {
         _password: currentPassword,
       })
       if (verifyError || !verified) throw new Error('Contraseña actual incorrecta')

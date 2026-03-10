@@ -31,7 +31,7 @@ export function MfaEnroll({ onComplete }: MfaEnrollProps) {
       // Unenroll any stale unverified TOTP factors from previous aborted sessions
       // to avoid accumulating phantom factors on Supabase
       const { data: existing } = await supabase.auth.mfa.listFactors()
-      const stale = existing?.totp.filter(f => f.status === 'unverified') ?? []
+      const stale = existing?.totp.filter(f => (f.status as string) === 'unverified') ?? []
       await Promise.all(stale.map(f => supabase.auth.mfa.unenroll({ factorId: f.id })))
 
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({

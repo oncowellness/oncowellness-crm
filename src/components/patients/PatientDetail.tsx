@@ -11,6 +11,7 @@ import { useClinicalNotes } from '@/hooks/useClinicalNotes'
 import { useLogPhaseTransition } from '@/hooks/useClinicalEvents'
 import { useAuth } from '@/contexts/AuthContext'
 import { JourneyTimeline } from './JourneyTimeline'
+import { ClinicalPathwayProgress } from './ClinicalPathwayProgress'
 import { ClinicalReport } from '../reports/ClinicalReport'
 import { ClinicalTrends } from './ClinicalTrends'
 import { FacitFWidget } from '../dashboard/FacitFWidget'
@@ -252,6 +253,9 @@ export function PatientDetail() {
           </div>
         )}
       </div>
+
+      {/* Clinical Pathway Progress (MSK F1-F8) */}
+      <ClinicalPathwayProgress currentPhase={patient.fase_journey as Phase} />
 
       {/* Administrative Info */}
       <PatientAdminInfo patient={patient as any} />

@@ -1272,6 +1272,22 @@ export type Database = {
         | "EORTC"
         | "Transverso"
         | "Balance"
+        | "Distress"
+        | "ISI"
+        | "MQOL"
+        | "BIS"
+        | "Rosenberg"
+        | "BFI"
+        | "MFI"
+        | "DASH"
+        | "LEFS"
+        | "LYMQOL"
+        | "IPAQ"
+        | "EVA"
+        | "BPI"
+        | "FSFI"
+        | "IIEF"
+        | "ICIQ-SF"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1457,6 +1473,22 @@ export const Constants = {
         "EORTC",
         "Transverso",
         "Balance",
+        "Distress",
+        "ISI",
+        "MQOL",
+        "BIS",
+        "Rosenberg",
+        "BFI",
+        "MFI",
+        "DASH",
+        "LEFS",
+        "LYMQOL",
+        "IPAQ",
+        "EVA",
+        "BPI",
+        "FSFI",
+        "IIEF",
+        "ICIQ-SF",
       ],
     },
   },

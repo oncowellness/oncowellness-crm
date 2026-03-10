@@ -1166,6 +1166,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_invitation_by_token: {
+        Args: { _token: string }
+        Returns: {
+          accepted_at: string
+          email: string
+          expires_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1173,6 +1183,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_active_user: { Args: { _uid: string }; Returns: boolean }
       is_assigned_to_patient: {
         Args: { _patient_id: string; _user_id: string }
         Returns: boolean

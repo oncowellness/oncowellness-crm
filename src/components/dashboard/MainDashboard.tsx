@@ -9,7 +9,7 @@ import { PHASE_LABELS, type Phase } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
 import { DashboardSkeleton } from '@/components/ui/LoadingSkeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { FacitFWidget } from './FacitFWidget'
+
 
 const PHASE_COLORS: Record<Phase, string> = {
   F1: 'bg-blue-100 text-blue-700',

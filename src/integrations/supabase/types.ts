@@ -1166,6 +1166,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invitation: {
+        Args: { _invitation_id: string }
+        Returns: undefined
+      }
       get_invitation_by_token: {
         Args: { _token: string }
         Returns: {

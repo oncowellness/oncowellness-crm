@@ -158,25 +158,32 @@ export function PhysioModule() {
         </div>
       )}
 
-      {/* KPI cards */}
+      {/* KPI cards — all tests */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">Handgrip Basal</p>
-          <p className="text-2xl font-bold text-blue-600">{baselineHandgrip ? `${getVal(baselineHandgrip)} kg` : 'N/D'}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">Handgrip Actual</p>
+          <p className="text-xs text-slate-500 mb-1">Handgrip</p>
           <p className="text-2xl font-bold text-slate-800">{latestHandgrip ? `${getVal(latestHandgrip)} kg` : 'N/D'}</p>
           {baselineHandgrip && latestHandgrip && latestHandgrip !== baselineHandgrip && <DeltaBadge current={getVal(latestHandgrip)} baseline={getVal(baselineHandgrip)} />}
+          {baselineHandgrip && <p className="text-[10px] text-slate-400 mt-0.5">Basal: {getVal(baselineHandgrip)} kg</p>}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">6MWT Basal</p>
-          <p className="text-2xl font-bold text-blue-600">{baselineSixMWT ? `${getVal(baselineSixMWT)} m` : 'N/D'}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">6MWT Actual</p>
+          <p className="text-xs text-slate-500 mb-1">6MWT</p>
           <p className="text-2xl font-bold text-slate-800">{latestSixMWT ? `${getVal(latestSixMWT)} m` : 'N/D'}</p>
           {baselineSixMWT && latestSixMWT && latestSixMWT !== baselineSixMWT && <DeltaBadge current={getVal(latestSixMWT)} baseline={getVal(baselineSixMWT)} />}
+          {baselineSixMWT && <p className="text-[10px] text-slate-400 mt-0.5">Basal: {getVal(baselineSixMWT)} m</p>}
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-xs text-slate-500 mb-1">30STS</p>
+          <p className="text-2xl font-bold text-slate-800">{latestSTS ? `${getVal(latestSTS)} reps` : 'N/D'}</p>
+          {baselineSTS && latestSTS && latestSTS !== baselineSTS && <DeltaBadge current={getVal(latestSTS)} baseline={getVal(baselineSTS)} />}
+          {baselineSTS && <p className="text-[10px] text-slate-400 mt-0.5">Basal: {getVal(baselineSTS)} reps</p>}
+        </div>
+        <div className={`rounded-xl border p-4 ${latestTUG && getVal(latestTUG) > 12 ? 'bg-red-50 border-red-300' : 'bg-white border-slate-200'}`}>
+          <p className="text-xs text-slate-500 mb-1">TUG</p>
+          <p className={`text-2xl font-bold ${latestTUG && getVal(latestTUG) > 12 ? 'text-red-600' : 'text-slate-800'}`}>{latestTUG ? `${getVal(latestTUG)} s` : 'N/D'}</p>
+          {baselineTUG && latestTUG && latestTUG !== baselineTUG && <DeltaBadge current={-getVal(latestTUG)} baseline={-getVal(baselineTUG)} />}
+          {baselineTUG && <p className="text-[10px] text-slate-400 mt-0.5">Basal: {getVal(baselineTUG)} s</p>}
+          {latestTUG && getVal(latestTUG) > 12 && <p className="text-[10px] text-red-500 font-medium mt-0.5">⚠ Riesgo caída</p>}
         </div>
       </div>
 
@@ -185,10 +192,10 @@ export function PhysioModule() {
         <h3 className="text-sm font-semibold text-slate-700 mb-4">Perfil Funcional Integral</h3>
         <ResponsiveContainer width="100%" height={280}>
           <RadarChart data={radarData}>
-            <PolarGrid />
+            <PolarGrid stroke="#e2e8f0" />
             <PolarAngleAxis dataKey="domain" tick={{ fontSize: 11 }} />
-            <Radar name="Actual" dataKey="actual" stroke="#14b8a6" fill="#14b8a6" fillOpacity={0.3} />
-            <Radar name="Basal" dataKey="basal" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.15} strokeDasharray="4 4" />
+            <Radar name="Basal" dataKey="basal" stroke="#f97316" fill="#f97316" fillOpacity={0.15} strokeWidth={2} strokeDasharray="6 3" />
+            <Radar name="Actual" dataKey="actual" stroke="#14b8a6" fill="#14b8a6" fillOpacity={0.3} strokeWidth={2} />
             <Legend />
           </RadarChart>
         </ResponsiveContainer>

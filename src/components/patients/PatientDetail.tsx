@@ -50,6 +50,8 @@ export function PatientDetail() {
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<any>({})
+  const [showEncounterForm, setShowEncounterForm] = useState(false)
+  const [editingEncounter, setEditingEncounter] = useState<EncounterRow | null>(null)
 
   if (isLoading) return <div className="p-6 text-slate-400">Cargando paciente...</div>
   if (!patient) return null

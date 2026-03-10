@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle, AlertCircle, Calendar, Phone, Mail, Stethoscope, FileText, Package, Pencil, X, Save, TrendingUp } from 'lucide-react'
+import { AlertTriangle, CheckCircle, AlertCircle, Calendar, Phone, Mail, Stethoscope, FileText, Package, Pencil, X, Save, TrendingUp, Plus } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatient, useUpdatePatient } from '@/hooks/usePatients'
 import { usePrograms } from '@/hooks/usePrograms'
@@ -8,6 +8,9 @@ import { useSessions } from '@/hooks/useSessions'
 import { useCrisisOrders, useAcknowledgeCrisis } from '@/hooks/useCrisisOrders'
 import { useClinicalNotes } from '@/hooks/useClinicalNotes'
 import { useLogPhaseTransition } from '@/hooks/useClinicalEvents'
+import { useEncounters, type EncounterRow } from '@/hooks/useEncounters'
+import { EncounterForm } from '../encounters/EncounterForm'
+import { EncounterTimeline } from '../encounters/EncounterTimeline'
 import { useAuth } from '@/contexts/AuthContext'
 import { JourneyTimeline } from './JourneyTimeline'
 import { ClinicalReport } from '../reports/ClinicalReport'
@@ -47,6 +50,8 @@ export function PatientDetail() {
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<any>({})
+  const [showEncounterForm, setShowEncounterForm] = useState(false)
+  const [editingEncounter, setEditingEncounter] = useState<EncounterRow | null>(null)
 
   if (isLoading) return <div className="p-6 text-slate-400">Cargando paciente...</div>
   if (!patient) return null
@@ -274,6 +279,44 @@ export function PatientDetail() {
 
       {/* Clinical Trends Charts */}
       <ClinicalTrends tests={clinicalTests} />
+
+      {/* Encounters Section */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Stethoscope size={16} className="text-teal-600" />
+            <h3 className="text-sm font-semibold text-slate-700">Historial de Visitas Clínicas</h3>
+          </div>
+          <button
+            onClick={() => { setEditingEncounter(null); setShowEncounterForm(true) }}
+            className="flex items-center gap-1.5 text-xs text-white bg-teal-600 px-3 py-1.5 rounded-lg hover:bg-teal-700"
+          >
+            <Plus size={14} /> Nueva Visita
+          </button>
+        </div>
+        <EncounterTimeline
+          patientId={patient.id}
+          onEditEncounter={(enc) => { setEditingEncounter(enc); setShowEncounterForm(true) }}
+        />
+      </div>
+
+      {/* Encounter Form Modal */}
+      {showEncounterForm && (
+        <EncounterForm
+          patientId={patient.id}
+          patientName={patient.nombre}
+          currentPhase={patient.fase_journey}
+          existingEncounter={editingEncounter}
+          baselineMetrics={{
+            handgrip: baselineHandgrip ? getVal(baselineHandgrip) : null,
+            sixMWT: baselineSixMWT ? getVal(baselineSixMWT) : null,
+            thirtySTS: clinicalTests.find(t => t.tipo === '30STS' && t.is_baseline)?.valor_numerico ?? null,
+            phq9: latestPHQ9 ? getVal(latestPHQ9) : null,
+            facitf: latestFACITF ? getVal(latestFACITF) : null,
+          }}
+          onClose={() => { setShowEncounterForm(false); setEditingEncounter(null) }}
+        />
+      )}
 
       {/* Programs & Sessions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

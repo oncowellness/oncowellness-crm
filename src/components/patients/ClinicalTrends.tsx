@@ -73,7 +73,7 @@ export function ClinicalTrends({ tests }: ClinicalTrendsProps) {
             const data = seriesMap[chart.key]
             const baseline = data.find(d => d.isBaseline)
             const latest = data[data.length - 1]
-            const change = baseline && latest && baseline.value !== 0
+            const change = baseline && latest
               ? ((latest.value - baseline.value) / baseline.value * 100).toFixed(1)
               : null
 

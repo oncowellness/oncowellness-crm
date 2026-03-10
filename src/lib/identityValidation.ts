@@ -2,14 +2,14 @@ import { z } from 'zod'
 
 const DNI_LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE'
 
-export function validateDNI(value: string): boolean {
+function validateDNI(value: string): boolean {
   const match = value.match(/^(\d{8})([A-Z])$/)
   if (!match) return false
   const num = parseInt(match[1], 10)
   return match[2] === DNI_LETTERS[num % 23]
 }
 
-export function validateNIE(value: string): boolean {
+function validateNIE(value: string): boolean {
   const match = value.match(/^([XYZ])(\d{7})([A-Z])$/)
   if (!match) return false
   const prefix = { X: '0', Y: '1', Z: '2' }[match[1]] ?? '0'

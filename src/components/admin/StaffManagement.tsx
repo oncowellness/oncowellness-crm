@@ -9,9 +9,18 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Users, ShieldCheck } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import type { Database } from '@/integrations/supabase/types'
-import { ROLE_LABELS } from '@/types'
 
 type AppRole = Database['public']['Enums']['app_role']
+
+const ROLE_LABELS: Record<AppRole, string> = {
+  admin: 'Administrador',
+  director: 'Director',
+  fisioterapeuta: 'Fisioterapeuta',
+  psiconcologo: 'Psico-oncólogo',
+  psicologo: 'Psicólogo',
+  nutricionista: 'Nutricionista',
+  entrenador: 'Entrenador',
+}
 
 const ALL_ROLES: AppRole[] = [
   'director',

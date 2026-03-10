@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle, AlertCircle, Calendar, Phone, Mail, Stethoscope, FileText, Package, Pencil, X, Save, TrendingUp } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
 import { useStore } from '../../store/useStore'
 import { usePatient, useUpdatePatient } from '@/hooks/usePatients'
 import { usePrograms } from '@/hooks/usePrograms'
@@ -11,7 +10,6 @@ import { useClinicalNotes } from '@/hooks/useClinicalNotes'
 import { useLogPhaseTransition } from '@/hooks/useClinicalEvents'
 import { useAuth } from '@/contexts/AuthContext'
 import { JourneyTimeline } from './JourneyTimeline'
-import { ClinicalPathwayProgress } from './ClinicalPathwayProgress'
 import { ClinicalReport } from '../reports/ClinicalReport'
 import { ClinicalTrends } from './ClinicalTrends'
 import { FacitFWidget } from '../dashboard/FacitFWidget'
@@ -46,7 +44,6 @@ export function PatientDetail() {
   const acknowledgeCrisis = useAcknowledgeCrisis()
   const logPhaseTransition = useLogPhaseTransition()
   const { user, profile } = useAuth()
-  const { toast } = useToast()
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<any>({})
@@ -100,22 +97,10 @@ export function PatientDetail() {
         new_phase: draft.fase_journey,
         performed_by: user.id,
         performed_by_name: profile?.nombre ?? user.email ?? 'Unknown',
-      }, {
-        onError: () => toast({
-          title: 'Advertencia',
-          description: 'No se pudo registrar el cambio de fase en el historial.',
-          variant: 'destructive',
-        }),
       })
     }
-    updatePatient.mutate({ id: patient!.id, ...draft }, {
-      onSuccess: () => setEditing(false),
-      onError: () => toast({
-        title: 'Error al guardar',
-        description: 'No se pudieron guardar los cambios del paciente.',
-        variant: 'destructive',
-      }),
-    })
+    updatePatient.mutate({ id: patient!.id, ...draft })
+    setEditing(false)
   }
 
   // Helper to get numeric value from clinical test
@@ -253,9 +238,6 @@ export function PatientDetail() {
           </div>
         )}
       </div>
-
-      {/* Clinical Pathway Progress (MSK F1-F8) */}
-      <ClinicalPathwayProgress currentPhase={patient.fase_journey as Phase} />
 
       {/* Administrative Info */}
       <PatientAdminInfo patient={patient as any} />

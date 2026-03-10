@@ -1,18 +1,18 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, ChevronRight, LogOut, Clock, AlertTriangle, Brain, CheckCircle, TestTube } from 'lucide-react'
+import { Bell, Search, ChevronRight, LogOut, Clock, AlertTriangle, Brain, CheckCircle, TestTube } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatient } from '@/hooks/usePatients'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useAllCrisisOrders } from '@/hooks/useAllCrisisOrders'
 import { useAuth } from '@/contexts/AuthContext'
 import { useNotificationStore } from '@/store/useNotificationStore'
-import { PHASE_LABELS, ROLE_LABELS, type Phase } from '../../types'
+import { PHASE_LABELS, type Phase } from '../../types'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { cn, timeAgo } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 const VIEW_TITLES: Record<string, string> = {
   dashboard: 'Panel Principal',
@@ -31,6 +31,20 @@ const VIEW_TITLES: Record<string, string> = {
   activity: 'Actividad Reciente',
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrador', director: 'Director', fisioterapeuta: 'Fisioterapeuta',
+  psicologo: 'Psicólogo', psiconcologo: 'Psico-oncólogo', nutricionista: 'Nutricionista', entrenador: 'Entrenador',
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Ahora'
+  if (mins < 60) return `${mins}m`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h`
+  return `${Math.floor(hours / 24)}d`
+}
 
 export function Header() {
   const { view, selectedPatientId, setView, selectPatient } = useStore()
@@ -120,6 +134,11 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3">
+        <div className="relative flex items-center">
+          <Search size={16} className="absolute left-3 text-slate-400" />
+          <input type="text" placeholder="Buscar paciente..." className="pl-9 pr-4 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 w-52" />
+        </div>
+
         {/* Notification bell with dropdown */}
         <div className="relative" ref={notifRef}>
           <button

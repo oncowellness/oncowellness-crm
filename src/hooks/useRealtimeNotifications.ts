@@ -72,8 +72,7 @@ export function useRealtimeNotifications() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'clinical_tests' },
         async (payload) => {
-          queryClient.invalidateQueries({ queryKey: ['clinical_tests'] })
-          queryClient.invalidateQueries({ queryKey: ['clinical_tests_all'] })
+          queryClient.invalidateQueries({ queryKey: ['clinical-tests'] })
           const test = payload.new as any
           const patientName = await resolvePatientName(test.patient_id)
 

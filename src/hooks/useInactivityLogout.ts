@@ -10,11 +10,12 @@ export function useInactivityLogout() {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(async () => {
       await supabase.auth.signOut()
+      window.location.reload()
     }, INACTIVITY_TIMEOUT_MS)
   }, [])
 
   useEffect(() => {
-    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll']
     events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }))
     resetTimer()
 

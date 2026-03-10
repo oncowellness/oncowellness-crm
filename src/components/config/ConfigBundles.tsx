@@ -3,9 +3,14 @@ import { Plus, Pencil, Check, X, Package } from 'lucide-react'
 import { usePrograms } from '@/hooks/usePrograms'
 import { useBundles, useCreateBundle, useUpdateBundle } from '@/hooks/useBundles'
 import { cn } from '../../lib/utils'
-import { PHASE_LABELS, PHASE_COLORS, type Phase, type ProgramType } from '../../types'
+import { PHASE_LABELS, type Phase, type ProgramType } from '../../types'
 
 const PHASES = Object.keys(PHASE_LABELS) as Phase[]
+const PHASE_COLORS: Record<Phase, string> = {
+  F1: 'bg-blue-100 text-blue-700', F2: 'bg-cyan-100 text-cyan-700', F3: 'bg-orange-100 text-orange-700',
+  F4: 'bg-red-100 text-red-700', F5: 'bg-purple-100 text-purple-700', F6: 'bg-green-100 text-green-700',
+  F7: 'bg-teal-100 text-teal-700', F8: 'bg-slate-100 text-slate-600',
+}
 const TYPE_COLORS: Record<string, string> = {
   FX: 'bg-blue-100 text-blue-700', PS: 'bg-purple-100 text-purple-700', NU: 'bg-green-100 text-green-700',
   EO: 'bg-pink-100 text-pink-700', TS: 'bg-orange-100 text-orange-700',

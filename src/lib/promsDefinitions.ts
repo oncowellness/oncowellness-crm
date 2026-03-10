@@ -56,6 +56,13 @@ const LIKERT_0_4: LikertOption[] = [
   { value: 4, label: 'Mucho' },
 ]
 
+const LIKERT_0_4_REV: LikertOption[] = [
+  { value: 4, label: 'Nada' },
+  { value: 3, label: 'Un poco' },
+  { value: 2, label: 'Algo' },
+  { value: 1, label: 'Bastante' },
+  { value: 0, label: 'Mucho' },
+]
 
 const LIKERT_0_10: LikertOption[] = Array.from({ length: 11 }, (_, i) => ({ value: i, label: String(i) }))
 

@@ -242,6 +242,9 @@ export function PatientDetail() {
       <JourneyTimeline currentPhase={patient.fase_journey as Phase} mindState={patient.mind_state ?? 'Activo'} />
       <PhaseHistory patientId={patient.id} />
 
+      {/* FACIT-F Fatigue Evolution */}
+      <FacitFWidget patientId={patient.id} />
+
       {/* Key metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-4">

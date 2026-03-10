@@ -280,6 +280,44 @@ export function PatientDetail() {
       {/* Clinical Trends Charts */}
       <ClinicalTrends tests={clinicalTests} />
 
+      {/* Encounters Section */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Stethoscope size={16} className="text-teal-600" />
+            <h3 className="text-sm font-semibold text-slate-700">Historial de Visitas Clínicas</h3>
+          </div>
+          <button
+            onClick={() => { setEditingEncounter(null); setShowEncounterForm(true) }}
+            className="flex items-center gap-1.5 text-xs text-white bg-teal-600 px-3 py-1.5 rounded-lg hover:bg-teal-700"
+          >
+            <Plus size={14} /> Nueva Visita
+          </button>
+        </div>
+        <EncounterTimeline
+          patientId={patient.id}
+          onEditEncounter={(enc) => { setEditingEncounter(enc); setShowEncounterForm(true) }}
+        />
+      </div>
+
+      {/* Encounter Form Modal */}
+      {showEncounterForm && (
+        <EncounterForm
+          patientId={patient.id}
+          patientName={patient.nombre}
+          currentPhase={patient.fase_journey}
+          existingEncounter={editingEncounter}
+          baselineMetrics={{
+            handgrip: baselineHandgrip ? getVal(baselineHandgrip) : null,
+            sixMWT: baselineSixMWT ? getVal(baselineSixMWT) : null,
+            thirtySTS: clinicalTests.find(t => t.tipo === '30STS' && t.is_baseline)?.valor_numerico ?? null,
+            phq9: latestPHQ9 ? getVal(latestPHQ9) : null,
+            facitf: latestFACITF ? getVal(latestFACITF) : null,
+          }}
+          onClose={() => { setShowEncounterForm(false); setEditingEncounter(null) }}
+        />
+      )}
+
       {/* Programs & Sessions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-white rounded-xl border border-slate-200 p-5">

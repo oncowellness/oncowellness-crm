@@ -14,6 +14,7 @@ import { ClinicalReport } from '../reports/ClinicalReport'
 import { ClinicalTrends } from './ClinicalTrends'
 import { FacitFWidget } from '../dashboard/FacitFWidget'
 import { PhaseHistory } from './PhaseHistory'
+import { PatientAdminInfo } from './PatientAdminInfo'
 import { formatDate, cn } from '../../lib/utils'
 import { PHASE_LABELS, type AlertStatus, type Phase, type MindState } from '../../types'
 

@@ -9,6 +9,7 @@ import { PHASE_LABELS, type Phase } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
 import { DashboardSkeleton } from '@/components/ui/LoadingSkeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { FacitFWidget } from './FacitFWidget'
 
 const PHASE_COLORS: Record<Phase, string> = {
   F1: 'bg-blue-100 text-blue-700',
@@ -132,39 +133,8 @@ export function MainDashboard() {
           </div>
         </div>
 
-        {/* Phase distribution */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Activity size={16} className="text-teal-600" />
-            <h3 className="text-sm font-semibold text-slate-700">Distribución por Fase</h3>
-          </div>
-          <div className="space-y-2">
-            {(Object.keys(PHASE_LABELS) as Phase[]).map(phase => {
-              const count = phaseDistribution[phase] ?? 0
-              const percentage = patients.length > 0 ? (count / patients.length) * 100 : 0
-              if (count === 0) return null
-              return (
-                <div key={phase} className="flex items-center gap-3">
-                  <span className={cn('text-[11px] font-bold w-6 shrink-0', PHASE_COLORS[phase].replace('bg-', 'text-').split(' ')[1])}>
-                    {phase}
-                  </span>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <p className="text-xs text-slate-600">{PHASE_LABELS[phase]}</p>
-                      <p className="text-xs font-semibold text-slate-700">{count}</p>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5">
-                      <div
-                        className={cn('h-1.5 rounded-full', PHASE_COLORS[phase].split(' ')[0])}
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        {/* FACIT-F Fatigue Evolution */}
+        <FacitFWidget />
       </div>
 
       {/* Crisis orders */}

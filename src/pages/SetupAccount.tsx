@@ -79,11 +79,8 @@ export default function SetupAccount() {
 
       if (signUpError) throw signUpError
 
-      // Mark invitation as accepted
-      await supabase
-        .from('invitations')
-        .update({ accepted_at: new Date().toISOString() })
-        .eq('id', invitation.id)
+      // Mark invitation as accepted via secure RPC
+      await supabase.rpc('accept_invitation', { _invitation_id: invitation.id })
 
       // Assign the role from the invitation
       if (authData.user) {

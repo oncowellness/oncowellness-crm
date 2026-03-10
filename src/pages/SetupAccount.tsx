@@ -38,10 +38,7 @@ export default function SetupAccount() {
   async function verifyToken() {
     try {
       const { data, error: fetchError } = await supabase
-        .from('invitations')
-        .select('*')
-        .eq('token', token)
-        .is('accepted_at', null)
+        .rpc('get_invitation_by_token', { _token: token })
         .single()
 
       if (fetchError || !data) {

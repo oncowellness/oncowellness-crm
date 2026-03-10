@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle, AlertCircle, Calendar, Phone, Mail, Stethoscope, FileText, Package, Pencil, X, Save, TrendingUp } from 'lucide-react'
+import { AlertTriangle, CheckCircle, AlertCircle, Calendar, Phone, Mail, Stethoscope, FileText, Package, Pencil, X, Save, TrendingUp, Plus } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatient, useUpdatePatient } from '@/hooks/usePatients'
 import { usePrograms } from '@/hooks/usePrograms'

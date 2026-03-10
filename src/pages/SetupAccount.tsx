@@ -79,25 +79,14 @@ export default function SetupAccount() {
 
       if (signUpError) throw signUpError
 
-      // Mark invitation as accepted via secure RPC
-      await supabase.rpc('accept_invitation', { _invitation_id: invitation.id })
-
-      // Assign the role from the invitation
+      // Mark invitation as accepted and assign role server-side via secure RPC.
+      // Role is read from the DB record — the client cannot influence what role is assigned.
       if (authData.user) {
-        await supabase.from('user_roles').insert({
-          user_id: authData.user.id,
-          role: invitation.role,
+        const { error: acceptError } = await supabase.rpc('accept_invitation', {
+          _invitation_id: invitation.id,
+          _user_id: authData.user.id,
         })
-
-        // Log the invitation acceptance in audit
-        await supabase.from('audit_logs').insert({
-          user_id: authData.user.id,
-          action_type: 'invitation_accepted',
-          resource_type: 'invitation',
-          resource_id: invitation.id,
-          user_email: invitation.email,
-          metadata: { invited_by: invitation.invited_by, role: invitation.role },
-        })
+        if (acceptError) throw acceptError
       }
 
       toast({

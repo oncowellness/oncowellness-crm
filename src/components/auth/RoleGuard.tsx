@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useStore } from '@/store/useStore'
 import { useToast } from '@/hooks/use-toast'
@@ -20,16 +20,20 @@ export function RoleGuard({ children, allowedRoles, fallback, redirectOnDeny = t
 
   const hasAccess = isAdmin || roles.some(r => allowedRoles.includes(r))
 
-  useEffect(() => {
-    if (!hasAccess && redirectOnDeny) {
+  // Redirect synchronously in the render path — useEffect fires after render,
+  // causing protected children to flash for one frame before navigation.
+  if (!hasAccess && redirectOnDeny) {
+    // Schedule toast outside render to avoid state-update-during-render warning
+    setTimeout(() => {
       toast({
         title: 'Acceso no autorizado',
         description: 'No tienes permisos para acceder a esta sección.',
         variant: 'destructive',
       })
-      setView('dashboard')
-    }
-  }, [hasAccess, redirectOnDeny, toast, setView])
+    }, 0)
+    setView('dashboard')
+    return null
+  }
 
   if (hasAccess) return <>{children}</>
 

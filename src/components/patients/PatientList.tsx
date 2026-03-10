@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { Search, Filter, AlertTriangle, CheckCircle, AlertCircle, User, UserPlus, Users } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatients } from '@/hooks/usePatients'
-import { PHASE_LABELS, type Phase, type AlertStatus } from '../../types'
+import { PHASE_LABELS, PHASE_COLORS, type Phase, type AlertStatus } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
 import { NewPatientModal } from './NewPatientModal'
 import { PatientListSkeleton } from '@/components/ui/LoadingSkeleton'
@@ -14,16 +14,6 @@ const ALERT_CONFIG: Record<AlertStatus, { label: string; icon: React.ReactNode; 
   rojo: { label: 'Alerta Roja', icon: <AlertTriangle size={14} />, classes: 'bg-red-100 text-red-700' },
 }
 
-const PHASE_COLORS: Record<Phase, string> = {
-  F1: 'bg-blue-100 text-blue-700',
-  F2: 'bg-cyan-100 text-cyan-700',
-  F3: 'bg-orange-100 text-orange-700',
-  F4: 'bg-red-100 text-red-700',
-  F5: 'bg-purple-100 text-purple-700',
-  F6: 'bg-green-100 text-green-700',
-  F7: 'bg-teal-100 text-teal-700',
-  F8: 'bg-slate-100 text-slate-700',
-}
 
 export function PatientList() {
   const { setView, selectPatient } = useStore()

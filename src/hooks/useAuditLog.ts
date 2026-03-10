@@ -19,7 +19,7 @@ export function useAuditLog() {
   const log = useCallback(async (entry: AuditEntry) => {
     if (!user) return
 
-    await supabase.from('audit_logs').insert([{
+    const { error } = await supabase.from('audit_logs').insert([{
       user_id: user.id,
       user_email: profile?.email ?? user.email ?? null,
       action_type: entry.action_type,
@@ -28,6 +28,10 @@ export function useAuditLog() {
       patient_id: entry.patient_id ?? null,
       metadata: (entry.metadata ?? {}) as any,
     }])
+    if (error) {
+      // Audit failures must be visible — silent failures break compliance trails
+      console.error('[AUDIT LOG FAILURE]', error, entry)
+    }
   }, [user, profile])
 
   return { log }

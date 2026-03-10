@@ -5,38 +5,14 @@ import {
 } from 'recharts'
 import { BarChart2, TrendingUp, TrendingDown, Users, AlertTriangle, Calendar, Activity } from 'lucide-react'
 import { usePatients } from '@/hooks/usePatients'
-import { useSessions } from '@/hooks/useSessions'
+import { useAllSessions } from '@/hooks/useSessions'
+import { useAllClinicalTests } from '@/hooks/useClinicalTests'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useAllCrisisOrders } from '@/hooks/useAllCrisisOrders'
 import { cn } from '@/lib/utils'
 import { PHASE_LABELS, type Phase } from '@/types'
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { supabase } from '@/integrations/supabase/client'
-import { useQuery } from '@tanstack/react-query'
-
-// Hooks for aggregated data
-function useAllSessions() {
-  return useQuery({
-    queryKey: ['all-sessions'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('sessions').select('*').order('fecha', { ascending: true })
-      if (error) throw error
-      return data
-    },
-  })
-}
-
-function useAllClinicalTests() {
-  return useQuery({
-    queryKey: ['all-clinical-tests'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('clinical_tests').select('*').order('created_at', { ascending: true })
-      if (error) throw error
-      return data
-    },
-  })
-}
 
 function StatCard({ label, value, sub, trend, icon, color }: {
   label: string; value: string; sub?: string; trend?: 'up' | 'down' | 'neutral'

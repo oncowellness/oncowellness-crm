@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input'
 import { useEmergencyLock } from '@/hooks/useEmergencyLock'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 
 export default function EmergencyLockPage() {
   const { deactivateLockdown } = useEmergencyLock()
-  const { isAdmin, signOut } = useAuth()
+  const { isAdmin, signOut, user } = useAuth()
   const { toast } = useToast()
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,7 +20,20 @@ export default function EmergencyLockPage() {
       toast({ title: 'Acceso denegado', description: 'Solo administradores pueden desbloquear el sistema.', variant: 'destructive' })
       return
     }
+    if (!password.trim()) {
+      toast({ title: 'Contraseña requerida', description: 'Introduzca su contraseña para continuar.', variant: 'destructive' })
+      return
+    }
     setLoading(true)
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: user!.email!,
+      password,
+    })
+    if (authError) {
+      toast({ title: 'Contraseña incorrecta', description: 'La verificación de identidad ha fallado.', variant: 'destructive' })
+      setLoading(false)
+      return
+    }
     const success = await deactivateLockdown()
     if (success) {
       toast({ title: 'Sistema desbloqueado', description: 'El sistema ha sido restaurado.' })

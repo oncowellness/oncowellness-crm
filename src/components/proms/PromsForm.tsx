@@ -21,6 +21,7 @@ export function PromsForm({ instrument, patientId, onComplete }: PromsFormProps)
   const [answers, setAnswers] = useState<number[]>(new Array(instrument.questions.length).fill(defaultVal))
   const [touched, setTouched] = useState<boolean[]>(new Array(instrument.questions.length).fill(false))
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [isBaseline, setIsBaseline] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [page, setPage] = useState(0)
 
@@ -47,6 +48,7 @@ export function PromsForm({ instrument, patientId, onComplete }: PromsFormProps)
       patient_id: patientId,
       tipo: instrument.key as any,
       valor_numerico: score,
+      is_baseline: isBaseline,
       valores_json: { answers: [...answers], severity: band?.key, date },
       staff_id: user?.id ?? null,
     }, {
@@ -103,6 +105,19 @@ export function PromsForm({ instrument, patientId, onComplete }: PromsFormProps)
           className="text-sm border border-input rounded-xl px-3 py-2.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
         />
       </div>
+
+      {/* Baseline toggle — required for correct delta calculations in ClinicalTrends */}
+      <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
+        <input
+          type="checkbox"
+          checked={isBaseline}
+          onChange={e => setIsBaseline(e.target.checked)}
+          className="w-4 h-4 accent-primary rounded"
+        />
+        <span className="text-xs font-medium text-muted-foreground">
+          Medición basal (primera evaluación de referencia)
+        </span>
+      </label>
 
       {/* Progress bar */}
       <div className="space-y-1.5">

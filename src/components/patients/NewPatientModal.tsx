@@ -5,6 +5,7 @@ import { PHASE_LABELS, type Phase, type MindState } from '../../types'
 import { cn } from '../../lib/utils'
 import { toast } from 'sonner'
 import { SPAIN_PROVINCES, COUNTRIES, ID_TYPES } from '@/lib/spainGeo'
+import { validateDNI, validateNIE } from '@/lib/identityValidation'
 
 interface Props {
   onClose: () => void
@@ -47,19 +48,6 @@ function Field({
 
 const inputCls = 'w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400'
 const inputErrorCls = 'w-full text-sm border border-red-300 rounded-lg px-3 py-2 bg-red-50/30 focus:outline-none focus:ring-2 focus:ring-red-400'
-
-const DNI_LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE'
-function validateDNI(value: string): boolean {
-  const match = value.match(/^(\d{8})([A-Z])$/)
-  if (!match) return false
-  return match[2] === DNI_LETTERS[parseInt(match[1], 10) % 23]
-}
-function validateNIE(value: string): boolean {
-  const match = value.match(/^([XYZ])(\d{7})([A-Z])$/)
-  if (!match) return false
-  const prefix = { X: '0', Y: '1', Z: '2' }[match[1]] ?? '0'
-  return match[3] === DNI_LETTERS[parseInt(prefix + match[2], 10) % 23]
-}
 
 export function NewPatientModal({ onClose, onCreated }: Props) {
   const createPatient = useCreatePatient()
@@ -142,7 +130,7 @@ export function NewPatientModal({ onClose, onCreated }: Props) {
 
   function buildInsert() {
     return {
-      codigo: `P${Date.now().toString().slice(-6)}`,
+      codigo: `P${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 100).toString().padStart(2, '0')}`,
       nombre: name.trim(),
       edad: parseInt(age) || null,
       genero: gender,

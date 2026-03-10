@@ -78,33 +78,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (_event, newSession) => {
         setSession(newSession)
         setUser(newSession?.user ?? null)
 
         if (newSession?.user) {
+          // setTimeout prevents Supabase client deadlock inside onAuthStateChange
           setTimeout(async () => {
             const userRoles = await fetchUserData(newSession.user.id)
             await checkMfaStatus(userRoles)
+            setLoading(false)
           }, 0)
         } else {
           setProfile(null)
           setRoles([])
           setMfaStatus('not_required')
+          setLoading(false)
         }
-        setLoading(false)
       }
     )
-
-    supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
-      setSession(existingSession)
-      setUser(existingSession?.user ?? null)
-      if (existingSession?.user) {
-        const userRoles = await fetchUserData(existingSession.user.id)
-        await checkMfaStatus(userRoles)
-      }
-      setLoading(false)
-    })
 
     return () => subscription.unsubscribe()
   }, [])
@@ -117,12 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = async () => {
+    // State reset is handled by onAuthStateChange(SIGNED_OUT) — no double update needed
     await supabase.auth.signOut()
-    setUser(null)
-    setSession(null)
-    setProfile(null)
-    setRoles([])
-    setMfaStatus('not_required')
   }
 
   return (

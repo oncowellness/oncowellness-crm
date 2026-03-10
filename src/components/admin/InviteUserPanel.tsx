@@ -20,6 +20,7 @@ const ROLE_OPTIONS: { value: AppRole; label: string }[] = [
   { value: 'nutricionista', label: 'Nutricionista' },
   { value: 'entrenador', label: 'Entrenador' },
   { value: 'admin', label: 'Administrador' },
+  { value: 'director', label: 'Director Clínico' },
 ]
 
 export function InviteUserPanel() {

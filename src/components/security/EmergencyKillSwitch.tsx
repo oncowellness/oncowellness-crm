@@ -32,15 +32,11 @@ export function EmergencyKillSwitch() {
   async function handleReauth() {
     setLoading(true)
     try {
-      // Re-authenticate by signing in again
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user?.email) throw new Error('No user')
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password,
+      // Verify password server-side without creating session side effects
+      const { data: verified, error: verifyError } = await supabase.rpc('verify_current_password', {
+        _password: password,
       })
-      if (error) throw error
+      if (verifyError || !verified) throw new Error('Contraseña incorrecta')
 
       // Activate lockdown
       const success = await activateLockdown(reason)

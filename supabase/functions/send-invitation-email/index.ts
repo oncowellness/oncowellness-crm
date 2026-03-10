@@ -1,7 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.98.0";
 
+const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
+
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -72,18 +74,6 @@ Deno.serve(async (req) => {
       req.headers.get("referer")?.replace(/\/$/, "") ||
       `${supabaseUrl.replace(".supabase.co", ".lovableproject.com")}`;
     const setupLink = `${origin}/setup?token=${token}`;
-
-    const roleLabels: Record<string, string> = {
-      fisioterapeuta: "Fisioterapeuta",
-      psiconcologo: "Psico-oncólogo",
-      nutricionista: "Nutricionista",
-      entrenador: "Entrenador",
-      admin: "Administrador",
-      director: "Director",
-      psicologo: "Psicólogo",
-    };
-
-    const roleLabel = roleLabels[role] || role;
 
     // Send email using Supabase's built-in auth admin
     // Since we don't have a custom email provider, we'll use the admin API

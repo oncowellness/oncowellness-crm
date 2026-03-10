@@ -5,22 +5,12 @@ import { useStore } from '../../store/useStore'
 import { usePatients } from '@/hooks/usePatients'
 import { useAllCrisisOrders } from '@/hooks/useAllCrisisOrders'
 import { useAllSessions } from '@/hooks/useSessions'
-import { PHASE_LABELS, type Phase } from '../../types'
+import { PHASE_LABELS, PHASE_COLORS, type Phase } from '../../types'
 import { formatDate, cn } from '../../lib/utils'
 import { DashboardSkeleton } from '@/components/ui/LoadingSkeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 
-const PHASE_COLORS: Record<Phase, string> = {
-  F1: 'bg-blue-100 text-blue-700',
-  F2: 'bg-cyan-100 text-cyan-700',
-  F3: 'bg-orange-100 text-orange-700',
-  F4: 'bg-red-100 text-red-700',
-  F5: 'bg-purple-100 text-purple-700',
-  F6: 'bg-green-100 text-green-700',
-  F7: 'bg-teal-100 text-teal-700',
-  F8: 'bg-slate-100 text-slate-700',
-}
 
 export function MainDashboard() {
   const { setView, selectPatient } = useStore()

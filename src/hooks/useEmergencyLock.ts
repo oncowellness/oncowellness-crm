@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 
+const GOVERNANCE_ID = '00000000-0000-0000-0000-000000000001'
+
 export function useEmergencyLock() {
   const [isLocked, setIsLocked] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -10,7 +12,7 @@ export function useEmergencyLock() {
     supabase
       .from('system_governance')
       .select('emergency_lock_active')
-      .eq('id', '00000000-0000-0000-0000-000000000001')
+      .eq('id', GOVERNANCE_ID)
       .single()
       .then(({ data }) => {
         setIsLocked(data?.emergency_lock_active ?? false)
@@ -51,7 +53,7 @@ export function useEmergencyLock() {
         reason,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', '00000000-0000-0000-0000-000000000001')
+      .eq('id', GOVERNANCE_ID)
 
     return !error
   }
@@ -66,7 +68,7 @@ export function useEmergencyLock() {
         reason: null,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', '00000000-0000-0000-0000-000000000001')
+      .eq('id', GOVERNANCE_ID)
 
     return !error
   }

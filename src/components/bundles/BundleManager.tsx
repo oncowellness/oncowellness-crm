@@ -4,15 +4,9 @@ import { useStore } from '../../store/useStore'
 import { usePatient, useUpdatePatient } from '@/hooks/usePatients'
 import { usePrograms } from '@/hooks/usePrograms'
 import { useBundles } from '@/hooks/useBundles'
-import { PHASE_LABELS, type Phase } from '../../types'
+import { PHASE_LABELS, PHASE_COLORS, type Phase } from '../../types'
 import { cn } from '../../lib/utils'
 
-const PHASE_COLORS: Record<Phase, string> = {
-  F1: 'bg-blue-100 text-blue-700 border-blue-200', F2: 'bg-cyan-100 text-cyan-700 border-cyan-200',
-  F3: 'bg-orange-100 text-orange-700 border-orange-200', F4: 'bg-red-100 text-red-700 border-red-200',
-  F5: 'bg-purple-100 text-purple-700 border-purple-200', F6: 'bg-green-100 text-green-700 border-green-200',
-  F7: 'bg-teal-100 text-teal-700 border-teal-200', F8: 'bg-slate-100 text-slate-700 border-slate-200',
-}
 
 const PROGRAM_TYPE_COLORS: Record<string, string> = {
   FX: 'bg-blue-50 text-blue-700 border-blue-100', PS: 'bg-purple-50 text-purple-700 border-purple-100',

@@ -1356,6 +1356,12 @@ export type Database = {
         | "FSFI"
         | "IIEF"
         | "ICIQ-SF"
+        | "LY_profile"
+        | "LY_eval_isl"
+        | "LY_eval_ow"
+        | "LY_assessment"
+        | "LY_treatment"
+        | "LY_lymqol"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1557,6 +1563,12 @@ export const Constants = {
         "FSFI",
         "IIEF",
         "ICIQ-SF",
+        "LY_profile",
+        "LY_eval_isl",
+        "LY_eval_ow",
+        "LY_assessment",
+        "LY_treatment",
+        "LY_lymqol",
       ],
     },
   },

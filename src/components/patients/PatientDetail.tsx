@@ -251,35 +251,6 @@ export function PatientDetail() {
       <JourneyTimeline currentPhase={patient.fase_journey as Phase} mindState={patient.mind_state ?? 'Activo'} />
       <PhaseHistory patientId={patient.id} />
 
-      {/* FACIT-F Fatigue Evolution */}
-      <FacitFWidget patientId={patient.id} />
-
-      {/* Key metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">Handgrip (dominante)</p>
-          <p className="text-2xl font-bold text-slate-800">{latestHandgrip ? `${getVal(latestHandgrip)} kg` : 'N/D'}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">6MWT (distancia)</p>
-          <p className="text-2xl font-bold text-slate-800">{latestSixMWT ? `${getVal(latestSixMWT)} m` : 'N/D'}</p>
-        </div>
-        <div className={cn('rounded-xl border p-4', latestPHQ9 && getVal(latestPHQ9) >= 10 ? 'bg-red-50 border-red-300' : 'bg-white border-slate-200')}>
-          <p className="text-xs text-slate-500 mb-1">PHQ-9 (último)</p>
-          <p className={cn('text-2xl font-bold', latestPHQ9 && getVal(latestPHQ9) >= 10 ? 'text-red-600' : 'text-slate-800')}>
-            {latestPHQ9 ? getVal(latestPHQ9) : 'N/D'}
-          </p>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs text-slate-500 mb-1">FACIT-F (fatiga)</p>
-          <p className="text-2xl font-bold text-slate-800">{latestFACITF ? getVal(latestFACITF) : 'N/D'}</p>
-          <p className="text-xs text-slate-400 mt-1">Rango 0–52 (mayor = mejor)</p>
-        </div>
-      </div>
-
-      {/* Clinical Trends Charts */}
-      <ClinicalTrends tests={clinicalTests} />
-
       {/* Encounters Section */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <div className="flex items-center justify-between mb-4">
@@ -317,6 +288,35 @@ export function PatientDetail() {
           onClose={() => { setShowEncounterForm(false); setEditingEncounter(null) }}
         />
       )}
+
+      {/* FACIT-F Fatigue Evolution */}
+      <FacitFWidget patientId={patient.id} />
+
+      {/* Key metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-xs text-slate-500 mb-1">Handgrip (dominante)</p>
+          <p className="text-2xl font-bold text-slate-800">{latestHandgrip ? `${getVal(latestHandgrip)} kg` : 'N/D'}</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-xs text-slate-500 mb-1">6MWT (distancia)</p>
+          <p className="text-2xl font-bold text-slate-800">{latestSixMWT ? `${getVal(latestSixMWT)} m` : 'N/D'}</p>
+        </div>
+        <div className={cn('rounded-xl border p-4', latestPHQ9 && getVal(latestPHQ9) >= 10 ? 'bg-red-50 border-red-300' : 'bg-white border-slate-200')}>
+          <p className="text-xs text-slate-500 mb-1">PHQ-9 (último)</p>
+          <p className={cn('text-2xl font-bold', latestPHQ9 && getVal(latestPHQ9) >= 10 ? 'text-red-600' : 'text-slate-800')}>
+            {latestPHQ9 ? getVal(latestPHQ9) : 'N/D'}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-xs text-slate-500 mb-1">FACIT-F (fatiga)</p>
+          <p className="text-2xl font-bold text-slate-800">{latestFACITF ? getVal(latestFACITF) : 'N/D'}</p>
+          <p className="text-xs text-slate-400 mt-1">Rango 0–52 (mayor = mejor)</p>
+        </div>
+      </div>
+
+      {/* Clinical Trends Charts */}
+      <ClinicalTrends tests={clinicalTests} />
 
       {/* Programs & Sessions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev-main",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["/Users/dani/dev/CRM/node_modules/.bin/vite"],
+      "port": 8080
+    }
+  ]
+}

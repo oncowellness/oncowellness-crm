@@ -222,3 +222,4 @@ export type View =
   | 'financial'
   | 'goals'
   | 'proms'
+  | 'lymphedema'

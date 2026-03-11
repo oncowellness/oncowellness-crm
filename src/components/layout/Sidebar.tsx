@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, Activity, Brain, BookOpen, BarChart2, Package,
-  Heart, CalendarDays, ChevronRight, Settings, Layers, Coins, Shield, UserPlus, Clock, Landmark, TrendingUp, UsersRound,
+  Heart, CalendarDays, ChevronRight, Settings, Layers, Coins, Shield, UserPlus, Clock, Landmark, TrendingUp, UsersRound, Droplets,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import { usePatients } from '@/hooks/usePatients'
@@ -49,6 +49,7 @@ const PATIENT_NAV: { label: string; icon: React.ReactNode; view: View }[] = [
   { label: 'Bundles', icon: <Package size={16} />, view: 'bundles' },
   { label: 'Dashboard Clínico', icon: <BarChart2 size={16} />, view: 'clinical-dashboard' },
   { label: 'Cuestionarios', icon: <Heart size={16} />, view: 'proms' },
+  { label: 'Linfedema', icon: <Droplets size={16} />, view: 'lymphedema' },
 ]
 
 export function Sidebar() {
